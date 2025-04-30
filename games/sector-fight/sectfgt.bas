@@ -283,6 +283,7 @@
 2820 gwh=gw*gh
 2830 ofx=INT((cols-gw)/2):ofy=INT((rows-gh)/2)+1:' locate offsets: ofy+1 row to leave a blank line for the status line
 2840 start1x=hgw+(gw MOD 2):start1y=1:start2x=hgw+(gw MOD 2):start2y=gh
+2845 p=0.2:sb=INT((gwh/2)*p)-1:' starting blocks formula -1p for the starting position in the center
 2850 RETURN
 2860 '
 2870 ' error handling
