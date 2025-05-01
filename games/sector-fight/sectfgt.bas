@@ -77,7 +77,7 @@
 770 GOSUB 2730:DIM grd(gw,gh):grd(0,0)=-1:' setup grid dimensions
 780 GOSUB 2650:' draw grid border
 790 GOSUB 2800:' define and draw starting positions and stats
-800 blmax=(gw+gh)*2:DIM bls(blmax,1)
+800 blmax=(gw+gh)*2:DIM bls1(blmax,1):blc1=0:DIM bls2(blmax,1):blc1=2:'lists of valid moves for player 1of and 2of, blc1,2 point to the end of fthe list
 810 '
 820 GOSUB 2520:' print block counts
 830 '
@@ -147,9 +147,9 @@
 1470 '
 1480 ' CPU Random
 1490 bx=0:by=0:tx=0:ty=0:bl=0
-1500 GOSUB 1720:' populate bls with all valid moves
+1500 GOSUB 1720:' populate bls1 with all valid moves
 1510 IF bl=0 THEN GOTO 1660:' no valid move found, we should never reach this state normally
-1520 r=INT(RND*bl)+1:bx=bls(r,0):by=bls(r,1)
+1520 r=INT(RND*bl)+1:bx=bls1(r,0):by=bls1(r,1)
 1530 ' We found a random valid block next we need to find a valid random target
 1540 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=bx:hy=by:GOSUB 2450:' highlight selected valid block
 1550 bl=0
@@ -158,18 +158,18 @@
 1580 nx=bx+dx:ny=by+dy
 1590 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN GOTO 1620
 1600 IF grd(nx,ny)<>0 AND grd(nx,ny)<>opp THEN GOTO 1620
-1610 bl=bl+1:bls(bl,0)=nx:bls(bl,1)=ny
+1610 bl=bl+1:bls1(bl,0)=nx:bls1(bl,1)=ny
 1620 NEXT dy
 1630 NEXT dx
 1640 IF bl=0 THEN GOTO 1660:' no valid target found, we should never normally reach this state
-1650 r=INT(RND*bl)+1:tx=bls(r,0):ty=bls(r,1)
+1650 r=INT(RND*bl)+1:tx=bls1(r,0):ty=bls1(r,1)
 1660 RETURN
 1670 '
 1680 ' CPU Defender
 1690 GOSUB 1480
 1700 RETURN
 1710 '
-1720 ' Populate bls with all valid moves
+1720 ' Populate bls1 with all valid moves
 1730 bl=0
 1740 minx=st(imn,0):miny=st(imn,1):maxx=st(imx,0):maxy=st(imx,1)
 1750 FOR x=minx TO maxx:FOR y=miny TO maxy
@@ -182,7 +182,7 @@
 1820 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN GOTO 1860
 1830 IF grd(nx,ny)<>0 AND grd(nx,ny)<>opp THEN GOTO 1860
 1840 bl=bl+1:' found valid target at nx,ny
-1850 bls(bl,0)=x:bls(bl,1)=y:GOTO 1880:' valid block found move to next
+1850 bls1(bl,0)=x:bls1(bl,1)=y:GOTO 1880:' valid block found move to next
 1860 NEXT dy
 1870 NEXT dx
 1880 NEXT y
