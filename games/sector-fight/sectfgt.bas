@@ -29,7 +29,7 @@
 290 ' Initialize cpu/player stats
 300 ' position, sum xy, avg xy, min and max xy
 310 ' selected pos., last occupied pos.
-320 ial=6:ist=0:ism=1:ivg=2:imn=3:imx=4:isl=5:ilt=6
+320 ial=7:ist=0:ism=1:ivg=2:imn=3:imx=4:isl=5:ilt=6:icn=7
 330 DIM st(ial,1):DIM st1(ial,1):DIM st2(ial,1):
 340 DIM st$(ial):RESTORE 2950:FOR i=0 TO ial:READ st$(i):NEXT
 350 '
@@ -90,7 +90,7 @@
 900 IF turn=1 THEN id=id1:opp=id2:cpuclr=cl1:b$=b1$:pn=pn1:clx=c1x:cly=c1y:FOR i=0 TO ial:st(i,0)=st1(i,0):st(i,1)=st1(i,1):NEXT
 910 IF turn=2 THEN id=id2:opp=id1:cpuclr=cl2:b$=b2$:pn=pn2:clx=c2x:cly=c2y:FOR i=0 TO ial:st(i,0)=st2(i,0):st(i,1)=st2(i,1):NEXT
 920 LOCATE sx,sy:PRINT STRING$(cols," ")
-930 prg=ROUND((c1+c2)/(gwh)*100,2)
+930 c1=st1(icn,0):c2=st2(icn,0):prg=ROUND((c1+c2)/(gwh)*100,2)
 940 PEN ctx:LOCATE sx,sy:PRINT "Turn";trn;STR$(prg);"%":PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
 950 '
 960 'Process cpu action based on personality
@@ -152,7 +152,7 @@
 1520 r=INT(RND*bl)+1:tx=bls1(r,0):ty=bls1(r,1)
 1530 IF id=id1 THEN st1(ilt,0)=tx:st1(ilt,1)=ty:st1(isl,0)=bx:st1(isl,1)=by ELSE st2(ilt,0)=tx:st2(ilt,1)=ty:st2(isl,0)=bx:st2(isl,1)=by
 1540 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 2050'if target is opp, resolve fight
-1550 IF act=1 OR act=2 THEN GOSUB 1820
+1550 IF act=1 OR act=2 THEN GOSUB 1820:' update stats on move or won fight
 1560 RETURN
 1570 '
 1580 ' CPU Defender
@@ -184,20 +184,24 @@
 1840 ' player 1 was active
 1850 c1=c1+1:st1(ism,0)=st1(ism,0)+tx:st1(ism,1)=st1(ism,1)+ty:st1(ivg,0)=INT(st1(ism,0)/c1):st1(ivg,1)=INT(st1(ism,1)/c1)
 1860 st1(imn,0)=MIN(st1(imn,0),tx):st1(imn,1)=MIN(st1(imn,1),ty):st1(imx,0)=MAX(st1(imx,0),tx):st1(imx,1)=MAX(st1(imx,1),ty)
+1865 st1(icn,0)=c1
 1870 FOR i=0 TO ial:st(i,0)=st1(i,0):st(i,1)=st1(i,1):NEXT
 1880 IF act<>2 THEN RETURN
-1890 IF c2-1<1 THEN c2=0:RETURN
+1890 IF c2-1<1 THEN c2=0:st2(icn,0)=c2:RETURN
 1900 c2=c2-1:st2(ism,0)=st2(ism,0)-tx:st2(ism,1)=st2(ism,1)-ty:st2(ivg,0)=INT(st2(ism,0)/c2):st2(ivg,1)=INT(st2(ism,1)/c2)
+1905 st2(icn,0)=c2
 1910 ' recalculate min max x y if needed due to opp's lost block
 1920 IF st2(imn,0)=tx OR st2(imn,1)=ty OR st2(imx,0)=tx OR st2(imx,1)=ty THEN GOSUB 2090:'recalculate min and max x,y
 1930 GOTO 2030
 1940 ' player 2 was active
 1950 c2=c2+1:st2(ism,0)=st2(ism,0)+tx:st2(ism,1)=st2(ism,1)+ty:st2(ivg,0)=INT(st2(ism,0)/c2):st2(ivg,1)=INT(st2(ism,1)/c2)
 1960 st2(imn,0)=MIN(st2(imn,0),tx):st2(imn,1)=MIN(st2(imn,1),ty):st2(imx,0)=MAX(st2(imx,0),tx):st2(imx,1)=MAX(st2(imx,1),ty)
+1965 st2(icn,0)=c2
 1970 FOR i=0 TO ial:st(i,0)=st2(i,0):st(i,1)=st2(i,1):NEXT
 1980 IF act<>2 THEN RETURN
-1990 IF c1-1<1 THEN c1=0:RETURN
+1990 IF c1-1<1 THEN c1=0:st1(icn,0)=c1:RETURN
 2000 c1=c1-1:st1(ism,0)=st1(ism,0)-tx:st1(ism,1)=st1(ism,1)-ty:st1(ivg,0)=INT(st1(ism,0)/c1):st1(ivg,1)=INT(st1(ism,1)/c1)
+2005 st1(icn,0)=c1
 2010 ' recalculate min max x y if needed due to opp's lost block
 2020 IF st1(imn,0)=tx OR st1(imn,1)=ty OR st1(imx,0)=tx OR st1(imx,1)=ty THEN GOSUB 2090:'recalculate min and max x,y
 2030 RETURN
@@ -235,7 +239,7 @@
 2350 '
 2360 ' print centered message
 2370 tmp=INT(LEN(ms$)/2):tmpx=MAX(1,hcols-tmp):LOCATE tmpx,hrows:PEN ctx:PRINT ms$:tmp=LEN(ms$)
-2380 CALL &BB18:LOCATE tmpx,hrows:PRINT SPC(tmp)
+2380 CLEAR INPUT:CALL &BB18:LOCATE tmpx,hrows:PRINT SPC(tmp)
 2390 RETURN
 2400 '
 2410 ' delay routine
@@ -265,7 +269,7 @@
 2650 st2(ism,0)=st2x:st2(ism,1)=st2y:st2(ivg,0)=st2x:st2(ivg,1)=st2y:st2(imn,0)=st2x:st2(imn,1)=st2y:st2(imx,0)=st2x:st2(imx,1)=st2y:st2(isl,0)=st2x:st2(isl,1)=st2y
 2660 LOCATE  ofx+st1x,ofy+st1y:PEN cl1:PRINT b1$
 2670 LOCATE  ofx+st2x,ofy+st2y:PEN cl2:PRINT b2$
-2680 p=0.1:sb=INT((gwh/2)*p):' starting blocks formula
+2680 p=0.1:sb=MAX(1,INT((gwh/2)*p)):' starting blocks formula
 2690 ' randomly select starting blocks for reach player
 2700 WHILE c1<sb OR c2<sb
 2710 ' Player 1 block selection
@@ -283,6 +287,7 @@
 2830 st2(ivg,0)=INT(st2(ism,0)/c1):st2(ivg,1)=INT(st2(ism,1)/c1):st2(imn,0)=MIN(st2(imn,0),tmpx):st2(imn,1)=MIN(st2(imn,1),tmpy):st2(imx,0)=MAX(st2(imx,0),tmpx):st2(imx,1)=MAX(st2(imx,1),tmpy)
 2840 SOUND 1,MAX(100,1500-(c1+c2)*15),2,10:LOCATE ofx+tmpx,ofy+tmpy:PEN cl2:PRINT b2$
 2850 WEND
+2855 st1(icn,0)=sb:st2(icn,0)=sb
 2860 RETURN
 2870 '
 2880 ' error handling
@@ -292,6 +297,6 @@
 2920 END
 2930 INK 0,1:INK 1,26:PAPER 0:PEN 1:BORDER 1:MODE 2:END
 2940 ' DATA
-2950 DATA "start","sum","avg","min","max","sel","last":' sel is last selected position, last is last occupied position
+2950 DATA "start","sum","avg","min","max","sel","last","count":' sel is last selected position, last is last occupied position
 2960 DATA "Normal","Attacker","Random","Defender":' Personality names
 2970 DATA "Nrm","Att","Rnd","Def":' Shorthands for Personality names
