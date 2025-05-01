@@ -259,12 +259,13 @@
 2711 FOR i=id1 TO id2
 2712 tmp=st(i,icn,0)
 2713 IF tmp>=sb THEN 2725
-2714 tmpx=INT(RND*gw)+1:tmpy=INT(RND*(gh/2))+1
+2714 IF i=id1 THEN tmpx=INT(RND*gw)+1:tmpy=INT(RND*(gh/2))+1 ELSE tmpx=INT(RND*gw)+1:tmpy=INT(RND*(gh/2))+1:tmpy=MIN(gh,INT(RND*(gh/2))+(gh/2)+1)
 2715 IF grd(tmpx,tmpy)<>0 THEN 2725
 2716 grd(tmpx,tmpy)=i:tmp=tmp+1:st(i,icn,0)=tmp:st(i,ism,0)=st(i,ism,0)+tmpx:st(i,ism,1)=st(i,ism,1)+tmpy
-2717 st(i,ivg,0)=INT(st(i,ism,0)/tmp):st(i,ivg,1)=INT(st(i,ism,1)/tmp):st(i,imn,0)=MIN(st(i,imn,0),tmpx):st(i,imn,1)=MIN(st(i,imn,1),tmpy):st(i,imx,0)=MAX(st(i,imx,0),tmpx):st(i,imx,1)=MAX(st(i,imx,1),tmpy)
-2718 IF i=id1 THEN cpuclr=cl1:a$=b1$ ELSE cpuclr=cl2:a$=b2$
-2719 SOUND 1,MAX(100,1500-(st(id,icn,0)+st(id2,icn,0))*10),2,10:LOCATE ofx+tmpx,ofy+tmpy:PEN cpuclr:PRINT a$
+2717 st(i,ivg,0)=INT(st(i,ism,0)/tmp):st(i,ivg,1)=INT(st(i,ism,1)/tmp):st(i,imn,0)=MIN(st(i,imn,0),tmpx):st(i,imn,1)=MIN(st(i,imn,1),tmpy)
+2718 st(i,imx,0)=MAX(st(i,imx,0),tmpx):st(i,imx,1)=MAX(st(i,imx,1),tmpy)
+2719 IF i=id1 THEN cpuclr=cl1:a$=b1$ ELSE cpuclr=cl2:a$=b2$
+2720 SOUND 1,1500,2,10:LOCATE ofx+tmpx,ofy+tmpy:PEN cpuclr:PRINT a$
 2725 NEXT
 2730 c1=st(id1,icn,0):c2=st(id2,icn,0)
 2850 WEND
