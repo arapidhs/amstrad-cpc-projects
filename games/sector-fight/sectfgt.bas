@@ -1,5 +1,3 @@
-10 ' debug messages and debug grid scanning
-20 dbgscan=1
 30 RANDOMIZE TIME
 40 ON ERROR GOTO 2710
 50 ON BREAK GOSUB 2760
@@ -78,10 +76,18 @@
 780 GOSUB 2380:DIM grd(gw,gh):grd(0,0)=-1:' setup grid dimensions
 790 GOSUB 2300:' draw grid border
 800 GOSUB 2450:' define and draw starting positions and stats
+805 '
 810 'lists of valid moves for player 1 and 2
 820 'element 0 of bls store the counter of valid moves e.g. bls(0,0,0) counter of potential valid moves for player 1 while bls(1,0,0) for player 2
 830 blmax=(gw+gh)*2:DIM bls(1,blmax,1)' REM bls(0) stores list for player id1, bls(2) for player id2
+835 '
 840 DIM vm(8,1):' array to store all potential 8 valid moves around a given block, first element at pos 0 stores the count of valid moves e.g.e vm(0,0)=5
+843 '
+844 ' Initialize valid block lists for players
+845 tmpid=id1:tmpopp=id2:GOSUB 1600
+846 tmpid=id2:tmpopp=id1:GOSUB 1600
+848 '
+849 ' clear initialization message
 850 LOCATE sx,sy:PRINT STRING$(cols," ")
 860 '
 870 c1=st(id1,icn,0):c2=st(id2,icn,0)
@@ -106,6 +112,7 @@
 1060 ' act 0 is no move found, 1 is move, 2 fight won, 3 fight loss
 1070 IF act=0 THEN GOTO 1200:'no valid move found, end game
 1080 ' print move or fg results to screen
+1085 tmpid=id:'used by highlight routine to decide color
 1090 IF act=1 THEN hx=tx:hy=ty:GOSUB 2100:SOUND 1,200,20,15:GOSUB 2100:' move highlight, play sound highlight
 1100 IF act=2 THEN hx=tx:hy=ty:GOSUB 2100:SOUND 1,142,20,15:SOUND 1,95,20,15:GOSUB 2100:' fight won highlight, play sound highlight
 1110 IF act=3 THEN hx=tx:hy=ty:GOSUB 2100:SOUND 1,95,20,15:SOUND 1,125,20,15:GOSUB 2100:' fight lost highlight, play sound highlight
@@ -140,16 +147,14 @@
 1400 '
 1410 ' CPU Random
 1420 ids=id-1:bx=0:by=0:tx=0:ty=0
-1430 GOSUB 1600:' populate bls with all valid moves
 1440 tmp=bls(ids,0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
 1450 r=INT(RND*tmp)+1:tmpx=bls(ids,r,0):tmpy=bls(ids,r,1)
 1460 ' We found a random valid block next we need to find a valid random target
-1470 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=bx:hy=by:GOSUB 2100:' highlight selected valid block
 1480 tmpopp=opp:GOSUB 1760:'populate valid moves
 1490 tmp=vm(0,0):IF tmp<1 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
 1500 r=INT(RND*tmp)+1:tx=vm(r,0):ty=vm(r,1)
 1510 bx=tmpx:by=tmpy:st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
-1520 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 1970'if target is opp, resolve fight
+1520 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 1970:'if target is opp, resolve fight
 1530 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1870:' update stats on move or won fight
 1540 RETURN
 1550 '
@@ -158,16 +163,16 @@
 1580 RETURN
 1590 '
 1600 ' Populate bls list with all valid moves for id
-1610 tmp=0:ids=id-1
-1620 minx=st(id,imn,0):miny=st(id,imn,1):maxx=st(id,imx,0):maxy=st(id,imx,1)
+1610 tmp=0:ids=tmpid-1
+1620 minx=st(tmpid,imn,0):miny=st(tmpid,imn,1):maxx=st(tmpid,imx,0):maxy=st(tmpid,imx,1)
 1630 FOR x=minx TO maxx:FOR y=miny TO maxy
-1640 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=x:hy=y:GOSUB 2100:' highlight grid scanning
-1650 IF grd(x,y)<>id THEN GOTO 1730
+1640 SOUND 1,1000,2,15:hx=x:hy=y:GOSUB 2100:' highlight grid scanning
+1650 IF grd(x,y)<>tmpid THEN GOTO 1730
 1660 FOR dx=-1 TO 1:FOR dy=-1 TO 1
 1670 IF dx=0 AND dy=0 THEN GOTO 1720
 1680 nx=x+dx:ny=y+dy
 1690 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN GOTO 1720
-1700 IF grd(nx,ny)=0 OR grd(nx,ny)=opp THEN tmp=tmp+1 ELSE 1720
+1700 IF grd(nx,ny)=0 OR grd(nx,ny)=tmpopp THEN tmp=tmp+1 ELSE 1720
 1710 bls(ids,0,0)=tmp:bls(ids,tmp,0)=x:bls(ids,tmp,1)=y:GOTO 1730:' valid block found move to next
 1720 NEXT:NEXT
 1730 NEXT:NEXT
@@ -209,7 +214,7 @@
 2090 '
 2100 ' highlight
 2110 IF hx<1 OR hy<1 OR hx>gw OR hy>gh THEN RETURN
-2120 LOCATE ofx+hx,ofy+hy:PEN cpuclr:PRINT hb$
+2120 LOCATE ofx+hx,ofy+hy:IF tmpid=id1 THEN PEN cl1:PRINT hb$ ELSE PEN cl2:PRINT hb$
 2130 IF grd(hx,hy)=id1 THEN PEN cl1:a$=b1$ ELSE IF grd(hx,hy)=id2 THEN PEN cl2:a$=b2$ ELSE a$=eb$
 2140 LOCATE ofx+hx,ofy+hy:PRINT a$
 2150 RETURN
