@@ -166,7 +166,7 @@
 1660 'check if new occupied block is valid and if yes (tmp=1) add it to the list
 1670 tmp=0:tmpx=tx:tmpy=ty:GOSUB 2260
 1680 IF tmp=1 AND bls(ids,0,0)+1<=blmax THEN tmp=bls(ids,0,0)+1:bls(ids,0,0)=tmp:bls(ids,tmp,0)=tx:bls(ids,tmp,1)=ty
-1690 'TODO: if act=2 (meaning opponent lost block) we need to remove the block at tx,ty from hix valid block list
+1690 'TODO: if act=2 (meaning opponent lost block) we need to remove the block at tx,ty from his valid block list
 1700 RETURN
 1710 '
 1720 ' CPU Defender
