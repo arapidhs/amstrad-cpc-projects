@@ -166,7 +166,8 @@
 1660 'check if new occupied block is valid and if yes (tmp=1) add it to the list
 1670 tmp=0:tmpx=tx:tmpy=ty:GOSUB 2260
 1680 IF tmp=1 AND bls(ids,0,0)+1<=blmax THEN tmp=bls(ids,0,0)+1:bls(ids,0,0)=tmp:bls(ids,tmp,0)=tx:bls(ids,tmp,1)=ty
-1690 'TODO: if act=2 (meaning opponent lost block) we need to remove the block at tx,ty from his valid block list
+1681' if a fight was won at tx,ty then we need to remove opponent's block from his valid list
+1682 IF act=2 THEN tmpid=opp:GOSUB 2322
 1700 RETURN
 1710 '
 1720 ' CPU Defender
@@ -230,6 +231,13 @@
 2300 IF grd(nx,ny)=0 OR grd(nx,ny)=tmpopp THEN tmp=1:RETURN ELSE 2310
 2310 NEXT:NEXT
 2320 RETURN
+2321 '
+2322 ' remove block from list at tmpx,tmpy
+2324 ids=tmpid-1:tmp=bls(ids,0,0):IF tmp<1 THEN RETURN
+2325 FOR i=1 TO tmp:IF bls(ids,i,0)=tmpx AND bls(ids,i,1)=tmpy THEN 2326 ELSE NEXT
+2326 FOR j=i TO tmp-1:bls(ids,j,0)=bls(ids,j+1,0):bls(ids,j,1)=bls(ids,j+1,1):NEXT
+2327 bls(ids,0,0)=tmp-1
+2329 RETURN
 2330 '
 2340 ' highlight
 2350 IF hx<1 OR hy<1 OR hx>gw OR hy>gh THEN RETURN
