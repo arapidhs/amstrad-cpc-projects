@@ -98,7 +98,7 @@
 1030 IF turn=2 THEN id=id2:opp=id1:cpuclr=cl2:b$=b2$:pn=pn2:clx=c2x:cly=c2y
 1040 LOCATE sx,sy:PRINT STRING$(cols," ")
 1050 c1=st(id1,icn,0):c2=st(id2,icn,0):prg=ROUND((c1+c2)/(gwh)*100,2)
-1060 PEN ctx:LOCATE sx,sy:PRINT "Turn";trn;STR$(prg);"%":PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
+1060 PEN cpuclr:LOCATE sx,sy:PRINT "Turn";trn;STR$(prg);"%":PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
 1070 '
 1080 'Process cpu action based on personality
 1090 act=0:ON pn+1 GOSUB 1400,1440,1480,1720
@@ -113,7 +113,8 @@
 1180 IF act=3 THEN hx=tx:hy=ty:GOSUB 2340:SOUND 1,95,20,15:SOUND 1,125,20,15:GOSUB 2340:' fight lost highlight, play sound highlight
 1190 IF act=1 OR act=2 THEN LOCATE ofx+tx,ofy+ty:PEN cpuclr:PRINT b$;
 1200 GOSUB 2410:' print block counts
-1210 IF ps=1 THEN CLEAR INPUT:CALL &BB18:'auto pause
+1201 'auto pause
+1210 IF ps=1 THEN a$="":FOR i=sx TO cols:LOCATE i,sy:a$=a$+COPYCHR$(#0):NEXT:PAPER cpuclr:PEN cbg:LOCATE sx,sy:PRINT a$:PAPER cbg:PEN cpuclr:CLEAR INPUT:CALL &BB18
 1220 IF c1+c2>=gwh OR c1=0 OR c2=0 THEN GOTO 1310
 1230 IF turn=1 THEN turn=2 ELSE turn=1
 1240 trs=1
