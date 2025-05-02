@@ -3,27 +3,22 @@
 30 ON BREAK GOSUB 3000
 40 MODE 1:INK 0,0:INK 1,26:PAPER 0:PEN 1:BORDER 0
 50 '
-60 PRINT "Select mode (0-Mode0 1-Mode1 2-Mode2)";
+60 PRINT "Select mode (0-Mode0 1-Mode1)";
 70 a$="":WHILE a$="":a$=INKEY$:WEND
-80 IF a$<>"0" AND a$<>"1" AND a$<>"2" THEN a$="1"
-90 smd=VAL(a$)
-100 cols=20*(2^smd):rows=25:hcols=INT(cols/2):hrows=INT(rows/2)
+80 IF a$<>"0" AND a$<>"1" THEN a$="1"
+90 smd=VAL(a$):cols=20*(2^smd):rows=25:hcols=INT(cols/2):hrows=INT(rows/2)
 110 PRINT"Select move delay (1=0.5s 2=1s else=0s)";
 120 a$="":WHILE a$="":a$=INKEY$:WEND
 130 IF a$="1" THEN dly=500 ELSE IF a$="2" THEN dly=1000 ELSE dly=0
 140 '
 150 ' Screen initialization and colors
 160 ' cbg bg color, cl1,cl2 cpu colors, ctx text color
-170 IF smd=2 THEN INK 0,0:INK 1,26:INK 2,26:INK 3,26:cbg=0:cl1=1:cl2=1:ctx=1 ELSE INK 0,0:INK 1,2:INK 2,6:INK 3,26:cbg=0:cl1=1:cl2=2:ctx=3
-180 PAPER cbg:BORDER cbg:PEN ctx:MODE smd
+170 INK 0,0:INK 1,2:INK 2,6:INK 3,26:cbg=0:cl1=1:cl2=2:ctx=3:PAPER cbg:BORDER cbg:PEN ctx:MODE smd
 190 ms$="Loading...":tmp=INT(LEN(ms$)/2):tmpx=MAX(1,hcols-tmp):LOCATE tmpx,hrows:PEN ctx:PRINT ms$
 200 '
 210 ' Setup blocks, cpu1 cpu2 empty block, highlight block
-220 IF smd=2 THEN b1$=CHR$(143):b2$=CHR$(206) ELSE b1$=CHR$(207):b2$=CHR$(207)
-230 SYMBOL 240,0,0,60,60,60,60,0,0
-240 eb$=CHR$(32):hb$=CHR$(240)
+220 b1$=CHR$(207):b2$=CHR$(207):SYMBOL 240,0,0,60,60,60,60,0,0:eb$=CHR$(32):hb$=CHR$(240)
 250 '
-260 '
 270 ' Initialize cpu/player stats
 280 ' position, sum xy, avg xy, min and max xy
 290 ' selected pos., last occupied pos.
