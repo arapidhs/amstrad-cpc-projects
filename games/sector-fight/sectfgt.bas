@@ -98,7 +98,8 @@
 1030 IF turn=2 THEN id=id2:opp=id1:cpuclr=cl2:b$=b2$:pn=pn2:clx=c2x:cly=c2y
 1040 LOCATE sx,sy:PRINT STRING$(cols," ")
 1050 c1=st(id1,icn,0):c2=st(id2,icn,0):prg=ROUND((c1+c2)/(gwh)*100,2)
-1060 PEN cpuclr:LOCATE sx,sy:PRINT "Turn";trn;STR$(prg);"%":PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
+1060 PEN ctx:LOCATE sx,sy:PRINT "Turn";:PEN cpuclr:PRINT trn;:PEN ctx:PRINT STR$(prg);"%";
+1065 PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
 1070 '
 1080 'Process cpu action based on personality
 1090 act=0:ON pn+1 GOSUB 1400,1440,1480,1720
