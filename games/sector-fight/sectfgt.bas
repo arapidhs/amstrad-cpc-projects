@@ -34,12 +34,10 @@
 340 ' Battle probabilities array - btl():
 350 ' 0-2 friendly block min,max,avg
 360 ' 3-5 opposing min,max,avg
-370 ' 6-8 empty min,max,avg
-380 bsz=8:frn=0:frx=1:fra=2:opn=3:opx=4:opa=5:emn=6:emx=7:ema=8
+380 bsz=5:frn=0:frx=1:fra=2:opn=3:opx=4:opa=5
 390 DIM btl(bsz)
-400 btl(frn)=0.05:btl(frx)=0.1:btl(fra)=(btl(frn)+btl(frx))/2
-410 btl(opn)=-0.1:btl(opx)=-0.05:btl(opa)=(btl(opn)+btl(opx))/2
-420 btl(emn)=0.01:btl(emx)=-0.03:btl(ema)=(btl(emn)+btl(emx))/2
+400 btl(frn)=0.1:btl(frx)=0.2:btl(fra)=(btl(frn)+btl(frx))/2
+410 btl(opn)=-0.2:btl(opx)=-0.1:btl(opa)=(btl(opn)+btl(opx))/2
 430 '
 440 ' Attacker and defense thresholds
 450 attthres=0.3:defthres=0.3
@@ -162,7 +160,7 @@
 1610 tmpopp=opp:GOSUB 2130:'populate valid moves
 1620 tmp=vm(0,0):IF tmp<1 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
 1630 r=INT(RND*tmp)+1:tx=vm(r,0):ty=vm(r,1)
-1640 bx=tmpx:by=tmpy:st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
+1640 bx=tmpx:by=tmpy
 1650 ' block and target selected, resolve action
 1660 GOSUB 1860
 1670 RETURN
@@ -193,6 +191,7 @@
 1840 RETURN
 1850 '
 1860 ' action handler
+1861 st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
 1870 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 2340:'if target is opp, resolve fight
 1880 ' update stats on move or won fight
 1890 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 2240 ELSE RETURN
@@ -241,7 +240,11 @@
 2320 RETURN
 2330 '
 2340 ' resolve fg
-2350 r=RND:IF r>0.5 THEN act=2 ELSE act=3
+2341 pfg=0.35:FOR dx=-1 TO 1:FOR dy=-1 TO 1:IF dx=0 AND dy=0 THEN 2349
+2342 nx=tx+dx:ny=ty+dy:IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 2349
+2343 IF grd(nx,ny)=id THEN pfg=pfg+btl(frn)+RND*(btl(frx)-btl(frn)) ELSE IF grd(nx,ny)=opp THEN pfg=pfg+btl(opn)+RND*(btl(opx)-btl(opn))
+2349 NEXT:NEXT
+2350 IF RND<pfg THEN act=2 ELSE act=3
 2360 RETURN
 2370 '
 2380 ' recalculate minx maxx miny maxy
