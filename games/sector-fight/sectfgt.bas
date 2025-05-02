@@ -146,16 +146,27 @@
 1460 RETURN
 1470 '
 1480 ' CPU Random
-1490 ids=id-1:bx=0:by=0:tx=0:ty=0
+1490 ids=id-1:bx=0:by=0:tx=0:ty=0:tmpid=id:tmpopp=opp
 1500 tmp=bls(ids,0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
 1510 r=INT(RND*tmp)+1:tmpx=bls(ids,r,0):tmpy=bls(ids,r,1)
+1511 'verify that the block is still valid, else refresh the valid block list
+1512 tmp=0::GOSUB 2133
+1513 IF tmp=0 THEN tmpid=id:GOSUB 1660 ELSE 1520:'if move invalid tmp=0move then refresh list
+1514 'retry getting valid block after list has been refreshed
+1515 tmp=bls(ids,0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
+1516 r=INT(RND*tmp)+1:tmpx=bls(ids,r,0):tmpy=bls(ids,r,1)
 1520 ' We found a random valid block next we need to find a valid random target
 1530 tmpopp=opp:GOSUB 1810:'populate valid moves
 1540 tmp=vm(0,0):IF tmp<1 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
 1550 r=INT(RND*tmp)+1:tx=vm(r,0):ty=vm(r,1)
 1560 bx=tmpx:by=tmpy:st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
 1570 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 2020:'if target is opp, resolve fight
-1580 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1920:' update stats on move or won fight
+1571 ' update stats on move or won fight
+1580 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1920 ELSE RETURN
+1581 'check if new occupied block is valid and if yes (tmp=1) add it to the list
+1582 tmp=0:tmpx=tx:tmpy=ty:GOSUB 2133
+1583 IF tmp=1 AND bls(ids,0,0)+1<=blmax THEN tmp=bls(ids,0,0)+1:bls(ids,0,0)=tmp:bls(ids,tmp,0)=tx:bls(ids,tmp,1)=ty
+1584 'TODO: if act=2 (meaning opponent lost block) we need to remove the block at tx,ty from hix valid block list
 1590 RETURN
 1600 '
 1610 ' CPU Defender
@@ -211,6 +222,14 @@
 2110 FOR j=miny TO maxy:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imn,1)=j:GOTO 2120 ELSE NEXT:NEXT
 2120 FOR j=maxy TO miny STEP -1:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imx,1)=j:GOTO 2130 ELSE NEXT:NEXT
 2130 RETURN
+2132 '
+2133 ' check if block at tmpx tmpy has at least one valid move
+2134 tmp=0:IF grd(tmpx,tmpy)<>tmpid THEN RETURN
+2135 FOR dx=-1 TO 1:FOR dy=-1 TO 1:IF dx=0 AND dy=0 THEN GOTO 2145
+2136 nx=tmpx+dx:ny=tmpy+dy:IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 2145
+2137 IF grd(nx,ny)=0 OR grd(nx,ny)=tmpopp THEN tmp=1:RETURN ELSE 2145
+2145 NEXT:NEXT
+2149 RETURN
 2140 '
 2150 ' highlight
 2160 IF hx<1 OR hy<1 OR hx>gw OR hy>gh THEN RETURN
