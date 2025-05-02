@@ -11,6 +11,10 @@
 100 CLEAR INPUT:LOCATE 1,3:PRINT"Auto Pause at End of Turn":PRINT"Default No (Y/N)";
 110 a$="":WHILE a$="":a$=INKEY$:WEND
 120 IF UPPER$(a$)="Y" THEN ps=1 ELSE ps=0
+121 CLEAR INPUT:LOCATE 1,6:PRINT"1 CPU Match (default) 2 vs Human";
+122 a$="":WHILE a$="":a$=INKEY$:WEND
+123 IF a$<>"1" AND a$<>"2" THEN a$="1"
+124 h=VAL(a$):IF h=1 THEN h=0 ELSE h=1:' h 0 means no human
 130 '
 140 ' Screen initialization and colors
 150 ' cbg bg color, cl1,cl2 cpu colors, ctx text color
@@ -42,12 +46,11 @@
 410 '
 420 ' Cumulative personality probabilities: pnprb()
 430 ' 1 norm: 0.25 prob, 2 att: 0.25, 3 rnd: 0.25, 4 def: 0.25
-440 psz=3:pnrm=0:patt=1:prnd=2:pdef=3
+440 psz=4:pnrm=0:patt=1:prnd=2:pdef=3:phmn=4
 450 DIM pnprb(psz):pnprb(pnrm)=0.25:pnprb(patt)=pnprb(pnrm)+0.25:pnprb(prnd)=pnprb(patt)+0.25:pnprb(pdef)=pnprb(prnd)+0.25
 460 '
 470 ' Personality names pn$()
 480 ' Normal, 1 Attacker, 2 Random, 3 Defender
-490 psz=3
 500 DIM pn$(psz)
 510 IF smd=0 THEN RESTORE 3100 ELSE RESTORE 3090
 520 FOR i=0 TO psz:READ pn$(i):NEXT
@@ -55,12 +58,13 @@
 540 ' Assign personalities based on personality probabilities: pnprb()
 550 r=RND:IF r<pnprb(pnrm) THEN pn1=pnrm ELSE IF r<pnprb(patt) THEN pn1=patt ELSE IF r<pnprb(prnd) THEN pn1=prnd ELSE pn1=pdef
 560 r=RND:IF r<pnprb(pnrm) THEN pn2=pnrm ELSE IF r<pnprb(patt) THEN pn2=patt ELSE IF r<pnprb(prnd) THEN pn2=prnd ELSE pn2=pdef
+565 IF h=1 THEN pn2=phmn
 570 '
 580 ' Wait for key press
 590 CLS:IF smd=0 THEN ms$="Press key to start" ELSE ms$="Press any key to start":GOSUB 2560:CLS
 600 '
 610 ' print personalities
-620 id1$="CPU 1":id2$="CPU 2"
+620 IF h=0 THEN id1$="CPU 1":id2$="CPU 2" ELSE id1$="CPU":id2$="You"
 630 c1$=id1$+": "+pn$(pn1):c2$=id2$+": "+pn$(pn2)
 640 c1x=MAX(LEN(c1$),LEN(c2$))+2:c1y=1:c2x=c1x:c2y=rows' aligned x location to print status on cpu rows
 650 sx=1:sy=2:' location of status line
@@ -81,7 +85,7 @@
 800 '
 810 ' Initialize valid block lists for players
 820 tmpid=id1:tmpopp=id2:GOSUB 1790
-830 tmpid=id2:tmpopp=id1:GOSUB 1790
+830 IF h=0 THEN tmpid=id2:tmpopp=id1:GOSUB 1790:'if it is a cpu vs cpu match initialize cpu 2 list has well
 840 '
 850 ' clear initialization message
 860 LOCATE sx,sy:PRINT STRING$(cols," ")
@@ -103,7 +107,7 @@
 1020 PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
 1030 '
 1040 'Process cpu action based on personality
-1050 act=0:ON pn+1 GOSUB 1370,1410,1450,1640
+1050 act=0:ON pn+1 GOSUB 1370,1410,1450,1640,1662
 1060 c1=st(id1,icn,0):c2=st(id2,icn,0)
 1070 LOCATE clx,cly:PRINT SPC(LEN(mst$));
 1080 ' act 0 is no move found, 1 is move, 2 fight won, 3 fight loss
@@ -165,6 +169,10 @@
 1640 ' CPU Defender
 1650 GOSUB 1450
 1660 RETURN
+1661 '
+1662 ' Human
+1663 LOCATE 1,1:PRINT"Waiting for human";:CALL &BB18
+1669 RETURN
 1670 '
 1680 ' action handler
 1690 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 2160:'if target is opp, resolve fight
@@ -173,8 +181,8 @@
 1720 'check if new occupied block is valid and if yes (tmp=1) add it to the list
 1730 ids=id-1:tmp=0:tmpid=id:tmpx=tx:tmpy=ty:GOSUB 2290
 1740 IF tmp=1 AND bls(ids,0,0)+1<=blmax THEN tmp=bls(ids,0,0)+1:bls(ids,0,0)=tmp:bls(ids,tmp,0)=tx:bls(ids,tmp,1)=ty
-1750 ' if a fight was won at tx,ty then we need to remove opponent's block from his valid list
-1760 IF act=2 THEN tmpid=opp:GOSUB 2370
+1750 'if opponent non human and if a fight was won at tx,ty then we need to remove opponent's block from his valid list
+1760 IF h=0 AND act=2 THEN tmpid=opp:GOSUB 2370
 1770 RETURN
 1780 '
 1790 ' Populate bls list with all valid moves for id
@@ -307,5 +315,5 @@
 3060 INK 0,1:INK 1,26:PAPER 0:PEN 1:BORDER 1:MODE 2:END
 3070 ' DATA
 3080 DATA "start","sum","avg","min","max","sel","last","count":' sel is last selected position, last is last occupied position
-3090 DATA "Normal","Attacker","Random","Defender":' Personality names
-3100 DATA "Nrm","Att","Rnd","Def":' Shorthands for Personality names
+3090 DATA "Normal","Attacker","Random","Defender","Human":' Personality names
+3100 DATA "Nrm","Att","Rnd","Def","Hmn":' Shorthands for Personality names
