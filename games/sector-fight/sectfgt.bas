@@ -147,7 +147,7 @@
 1510 r=INT(RND*tmp)+1:tmpx=bls(ids,r,0):tmpy=bls(ids,r,1)
 1520 'verify that the block is still valid, else refresh the valid block list
 1530 tmp=0:GOSUB 2260
-1540 IF tmp=0 THEN tmpid=id:GOSUB 1770 ELSE 1580:'if move invalid tmp=0 then refresh list
+1540 IF tmp=0 THEN tmpid=id:GOSUB 1760 ELSE 1580:'if move invalid tmp=0 then refresh list
 1550 'retry getting valid block after list has been refreshed
 1560 tmp=bls(ids,0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
 1570 r=INT(RND*tmp)+1:tmpx=bls(ids,r,0):tmpy=bls(ids,r,1)
@@ -156,20 +156,25 @@
 1600 tmp=vm(0,0):IF tmp<1 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
 1610 r=INT(RND*tmp)+1:tx=vm(r,0):ty=vm(r,1)
 1620 bx=tmpx:by=tmpy:st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
-1630 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 2130:'if target is opp, resolve fight
-1640 ' update stats on move or won fight
-1650 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 2030 ELSE RETURN
-1660 'check if new occupied block is valid and if yes (tmp=1) add it to the list
-1670 tmp=0:tmpx=tx:tmpy=ty:GOSUB 2260
-1680 IF tmp=1 AND bls(ids,0,0)+1<=blmax THEN tmp=bls(ids,0,0)+1:bls(ids,0,0)=tmp:bls(ids,tmp,0)=tx:bls(ids,tmp,1)=ty
-1681' if a fight was won at tx,ty then we need to remove opponent's block from his valid list
-1682 IF act=2 THEN tmpid=opp:GOSUB 2322
+1625 ' block and target selected, resolve action
+1630 GOSUB 1742
 1700 RETURN
 1710 '
 1720 ' CPU Defender
 1730 GOSUB 1480
 1740 RETURN
-1750 '
+1741 '
+1742 ' action handler
+1743 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 2130:'if target is opp, resolve fight
+1744 ' update stats on move or won fight
+1745 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 2030 ELSE RETURN
+1746 'check if new occupied block is valid and if yes (tmp=1) add it to the list
+1747 ids=id-1:tmp=0:tmpid=id:tmpx=tx:tmpy=ty:GOSUB 2260
+1748 IF tmp=1 AND bls(ids,0,0)+1<=blmax THEN tmp=bls(ids,0,0)+1:bls(ids,0,0)=tmp:bls(ids,tmp,0)=tx:bls(ids,tmp,1)=ty
+1749' if a fight was won at tx,ty then we need to remove opponent's block from his valid list
+1750 IF act=2 THEN tmpid=opp:GOSUB 2322
+1755 RETURN
+1759 '
 1760 ' Populate bls list with all valid moves for id
 1770 tmp=0:ids=tmpid-1
 1780 minx=st(tmpid,imn,0):miny=st(tmpid,imn,1):maxx=st(tmpid,imx,0):maxy=st(tmpid,imx,1)
