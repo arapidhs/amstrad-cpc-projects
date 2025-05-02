@@ -74,10 +74,12 @@
 740 LOCATE 1,rows:PEN cl2:PRINT c2$
 750 '
 760 ' Initialize grid and starting positions
+765 LOCATE sx,sy:PAPER ctx:PEN cbg:PRINT STRING$(cols," "):LOCATE sx,sy:PRINT"Initializing...":PAPER cbg:PEN ctx
 770 GOSUB 2420:DIM grd(gw,gh):grd(0,0)=-1:' setup grid dimensions
 780 GOSUB 2340:' draw grid border
 790 GOSUB 2490:' define and draw starting positions and stats
 800 blmax=(gw+gh)*2:DIM bls1(blmax,1):blc1=0:DIM bls2(blmax,1):blc1=2:'lists of valid moves for player 1of and 2of, blc1,2 point to the end of the list
+805 LOCATE sx,sy:PRINT STRING$(cols," ")
 810 '
 820 c1=st(id1,icn,0):c2=st(id2,icn,0)
 830 GOSUB 2210:' print block counts
