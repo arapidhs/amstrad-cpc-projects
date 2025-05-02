@@ -81,7 +81,7 @@
 795 'lists of valid moves for player 1 and 2
 796 'element 0 of bls1,2 store the counter of valid moves e.g. bls1(0,0) counter of potential valid moves
 800 blmax=(gw+gh)*2:DIM bls1(blmax,1):DIM bls2(blmax,1)
-804 DIM vm(8,1):' array to store all potential 8 valid moves around a given block
+804 DIM vm(8,1):' array to store all potential 8 valid moves around a given block, first element at pos 0 stores the count of valid moves e.g.e vm(0,0)=5
 805 LOCATE sx,sy:PRINT STRING$(cols," ")
 810 '
 820 c1=st(id1,icn,0):c2=st(id2,icn,0)
@@ -142,19 +142,13 @@
 1380 bx=0:by=0:tx=0:ty=0
 1390 GOSUB 1640:' populate bls1 with all valid moves
 1400 tmp=bls1(0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
-1410 r=INT(RND*tmp)+1:bx=bls1(r,0):by=bls1(r,1)
+1410 r=INT(RND*tmp)+1:tmpx=bls1(r,0):tmpy=bls1(r,1)
 1420 ' We found a random valid block next we need to find a valid random target
 1430 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=bx:hy=by:GOSUB 2140:' highlight selected valid block
-1440 tmp=0
-1450 FOR dx=-1 TO 1:FOR dy=-1 TO 1
-1460 IF dx=0 AND dy=0 THEN GOTO 1510
-1470 nx=bx+dx:ny=by+dy
-1480 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 1510
-1490 IF grd(nx,ny)=0 OR grd(nx,ny)=opp THEN tmp=tmp+1:vm(tmp,0)=nx:vm(tmp,1)=ny ELSE 1510
-1510 NEXT:NEXT
-1530 IF tmp=0 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
+1440 tmpopp=opp:GOSUB 1805:'populate valid moves
+1530 tmp=vm(0,0):IF tmp<1 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
 1540 r=INT(RND*tmp)+1:tx=vm(r,0):ty=vm(r,1)
-1550 st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
+1550 bx=tmpx:by=tmpy:st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
 1560 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 1950'if target is opp, resolve fight
 1570 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1840:' update stats on move or won fight
 1580 RETURN
@@ -177,6 +171,17 @@
 1770 bls1(0,0)=tmp:bls1(tmp,0)=x:bls1(tmp,1)=y:GOTO 1800:' valid block found move to next
 1780 NEXT:NEXT
 1800 NEXT:NEXT
+1802 RETURN
+1804 '
+1805 ' populate valid moves for tmpopp and block at tmpx,tmpy
+1806 tmp=0
+1807 FOR dx=-1 TO 1:FOR dy=-1 TO 1
+1808 IF dx=0 AND dy=0 THEN GOTO 1812
+1809 nx=tmpx+dx:ny=tmpy+dy:hx=nx:hy=ny:GOSUB 2140
+1810 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 1812
+1811 IF grd(nx,ny)=0 OR grd(nx,ny)=tmpopp THEN tmp=tmp+1:vm(tmp,0)=nx:vm(tmp,1)=ny ELSE 1812
+1812 NEXT:NEXT
+1813 vm(0,0)=tmp
 1820 RETURN
 1830 '
 1840 ' update stats after move, or won fight
