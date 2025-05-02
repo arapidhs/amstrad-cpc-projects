@@ -98,9 +98,9 @@
 980 WHILE c1+c2<gw*gh
 990 '
 1000 ' CPU turn
-1010 trn=trn+1:trs=0
-1020 IF turn=1 THEN id=id1:opp=id2:cpuclr=cl1:b$=b1$:pn=pn1:clx=c1x:cly=c1y
-1030 IF turn=2 THEN id=id2:opp=id1:cpuclr=cl2:b$=b2$:pn=pn2:clx=c2x:cly=c2y
+1010 bx=0:by=0:tx=0:ty=0:trn=trn+1:trs=0
+1020 IF turn=1 THEN id=id1:opp=id2:cpuclr=cl1:oppclr=cl2:b$=b1$:pn=pn1:clx=c1x:cly=c1y
+1030 IF turn=2 THEN id=id2:opp=id1:cpuclr=cl2:oppclr=cl1:b$=b2$:pn=pn2:clx=c2x:cly=c2y
 1040 LOCATE sx,sy:PRINT STRING$(cols," ")
 1050 c1=st(id1,icn,0):c2=st(id2,icn,0):prg=ROUND((c1+c2)/(gwh)*100,2)
 1060 PEN ctx:LOCATE sx,sy:PRINT "Turn";:PEN cpuclr:PRINT trn;:PEN ctx:PRINT STR$(prg);"%";
@@ -119,7 +119,8 @@
 1190 IF act=3 THEN hx=tx:hy=ty:GOSUB 2620:SOUND 1,95,20,15:SOUND 1,125,20,15:GOSUB 2620:' fight lost highlight, play sound highlight
 1200 IF act=1 OR act=2 THEN LOCATE ofx+tx,ofy+ty:PEN cpuclr:PRINT b$;
 1210 GOSUB 2780:' print block counts
-1220 'auto pause
+1220 'auto pause only for cpu moves
+1225 IF id=id2 AND h=1 THEN 1240
 1230 IF ps=1 THEN a$="":FOR i=sx TO cols:LOCATE i,sy:a$=a$+COPYCHR$(#0):NEXT:PAPER cpuclr:PEN cbg:LOCATE sx,sy:PRINT a$:PAPER cbg:PEN cpuclr:CLEAR INPUT:CALL &BB18
 1240 IF c1+c2>=gwh OR c1=0 OR c2=0 THEN GOTO 1330
 1250 IF turn=1 THEN turn=2 ELSE turn=1
@@ -179,8 +180,16 @@
 1790 IF a$=CHR$(240) THEN hy=hy-1 ELSE IF a$=CHR$(241) THEN hy=hy+1 ELSE IF a$=CHR$(242) THEN hx=hx-1 ELSE IF a$=CHR$(243) THEN hx=hx+1 ELSE IF a$=CHR$(32) THEN 1820 ELSE GOTO 1760
 1800 IF hx<1 THEN hx=1 ELSE IF hx>gw THEN hx=gw ELSE IF hy<1 THEN hy=1 ELSE IF hy>gh THEN hy=gh
 1810 GOSUB 2690:GOTO 1760:'Highlight cursor and WEND
-1820 IF grd(hx,hy)=id THEN SOUND 1,0,2,12,0,1:ENT -1,1,100,1 ELSE SOUND 1,300,10,10:SOUND 1,400,10,10
+1820 IF bx=0 THEN 1821 ELSE 1825
+1821 IF grd(hx,hy)=id THEN bx=hx:by=hy:SOUND 1,0,2,15,0,1:ENT -1,1,100,1:GOTO 1760:'valid move bx by locked
+1822 IF grd(hx,hy)=0 OR grd(hx,hy)=opp THEN SOUND 1,300,10,10:SOUND 1,400,10,10:GOTO 1760:'invalid move need to select bx by first
+1825 'bx by already locked
+1826 IF bx=hx AND by=hy THEN SOUND 1,0,2,15,0,1:ENT -1,1,100,1:bx=0:by=0:GOTO 1760:'selected bx by again so unselecting it and set bx by to 0
+1827 IF ABS(hx-bx)>1 OR ABS(hy-by)>1 THEN SOUND 1,300,10,10:SOUND 1,400,10,10:bx=0:by=0:GOTO 1760:'non adjacent to bx by selection, invalid resetting bx by to 0
+1828 IF grd(hx,hy)<>0 AND grd(hx,hy)<>opp THEN SOUND 1,300,10,10:SOUND 1,400,10,10:bx=0:by=0:GOTO 1760:'adjacent selection not valid resetting
+1829 tx=hx:ty=hy:GOSUB 2690:GOTO 1831:' valid move found proceed to action handler
 1830 WEND
+1831 GOSUB 1860:'action handler
 1840 RETURN
 1850 '
 1860 ' action handler
@@ -188,10 +197,10 @@
 1880 ' update stats on move or won fight
 1890 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 2240 ELSE RETURN
 1900 'check if new occupied block is valid and if yes (tmp=1) add it to the list
-1910 ids=id-1:tmp=0:tmpid=id:tmpx=tx:tmpy=ty:GOSUB 2470
+1910 tmp=0:ids=id-1:tmp=0:tmpid=id:tmpx=tx:tmpy=ty:GOSUB 2470
 1920 IF tmp=1 AND bls(ids,0,0)+1<=blmax THEN tmp=bls(ids,0,0)+1:bls(ids,0,0)=tmp:bls(ids,tmp,0)=tx:bls(ids,tmp,1)=ty
-1930 'if opponent non human and if a fight was won at tx,ty then we need to remove opponent's block from his valid list
-1940 IF h=0 AND act=2 THEN tmpid=opp:GOSUB 2550
+1930 'if a fight was won at tx,ty then we need to remove opponent's block from his valid list
+1940 IF act=2 THEN tmpid=opp:GOSUB 2550
 1950 RETURN
 1960 '
 1970 ' Populate bls list with all valid moves for id
@@ -244,15 +253,17 @@
 2440 FOR j=maxy TO miny STEP -1:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imx,1)=j:GOTO 2450 ELSE NEXT:NEXT
 2450 RETURN
 2460 '
-2470 ' check if block at tmpx tmpy has at least one valid move
-2480 tmp=0:IF grd(tmpx,tmpy)<>tmpid THEN RETURN
+2470 ' cpu only check if block at tmpx tmpy has at least one valid move
+2471 tmp=0:IF tmpid=id2 AND h=1 THEN RETURN
+2480 IF grd(tmpx,tmpy)<>tmpid THEN RETURN
 2490 FOR dx=-1 TO 1:FOR dy=-1 TO 1:IF dx=0 AND dy=0 THEN GOTO 2520
 2500 nx=tmpx+dx:ny=tmpy+dy:IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 2520
 2510 IF grd(nx,ny)=0 OR grd(nx,ny)=tmpopp THEN tmp=1:RETURN ELSE 2520
 2520 NEXT:NEXT
 2530 RETURN
 2540 '
-2550 ' remove block from list at tmpx,tmpy
+2550 ' cpu only: remove block from list at tmpx,tmpy
+2551 IF tmpid=id2 AND h=1 THEN RETURN
 2560 ids=tmpid-1:tmp=bls(ids,0,0):IF tmp<1 THEN RETURN
 2570 FOR i=1 TO tmp:IF bls(ids,i,0)=tmpx AND bls(ids,i,1)=tmpy THEN 2580 ELSE NEXT
 2580 FOR j=i TO tmp-1:bls(ids,j,0)=bls(ids,j+1,0):bls(ids,j,1)=bls(ids,j+1,1):NEXT
@@ -270,7 +281,8 @@
 2700 'restore previous position
 2710 IF grd(tmpx,tmpy)=id1 THEN PEN cl1:tmp$=b1$ ELSE IF grd(tmpx,tmpy)=id2 THEN PEN cl2:tmp$=b2$ ELSE tmp$=eb$
 2720 LOCATE ofx+tmpx,ofy+tmpy:PRINT tmp$
-2730 PEN ctx:IF grd(hx,hy)=id1 THEN PAPER cl1 ELSE IF grd(hx,hy)=id2 THEN PAPER cl2 ELSE PAPER cbg
+2730 IF bx>0 THEN PEN cl2 ELSE PEN ctx
+2731 IF grd(hx,hy)=id1 THEN PAPER cl1 ELSE IF grd(hx,hy)=id2 THEN PAPER cl2 ELSE PAPER cbg
 2740 LOCATE ofx+hx,ofy+hy:PRINT hb$
 2750 PAPER cbg:PEN cpuclr
 2760 RETURN
