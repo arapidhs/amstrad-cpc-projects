@@ -1,8 +1,8 @@
 10 ' debug messages and debug grid scanning
 20 dbgscan=1
 30 RANDOMIZE TIME
-40 ON ERROR GOTO 2740
-50 ON BREAK GOSUB 2790
+40 ON ERROR GOTO 2710
+50 ON BREAK GOSUB 2760
 60 MODE 1:INK 0,0:INK 1,26:PAPER 0:PEN 1:BORDER 0
 70 '
 80 PRINT "Select mode (0-Mode0 1-Mode1 2-Mode2)";
@@ -31,7 +31,7 @@
 310 ' selected pos., last occupied pos.
 320 id1=1:id2=2
 330 ial=7:ist=0:ism=1:ivg=2:imn=3:imx=4:isl=5:ilt=6:icn=7
-340 DIM st(2,ial,1):DIM st$(ial):RESTORE 2810:FOR i=0 TO ial:READ st$(i):NEXT
+340 DIM st(2,ial,1):DIM st$(ial):RESTORE 2780:FOR i=0 TO ial:READ st$(i):NEXT
 350 '
 360 ' Battle probabilities array - btl():
 370 ' 0-2 friendly block min,max,avg
@@ -55,7 +55,7 @@
 550 ' Normal, 1 Attacker, 2 Random, 3 Defender
 560 psz=3
 570 DIM pn$(psz)
-580 IF smd=0 THEN RESTORE 2830 ELSE RESTORE 2820
+580 IF smd=0 THEN RESTORE 2800 ELSE RESTORE 2790
 590 FOR i=0 TO psz:READ pn$(i):NEXT
 600 '
 610 ' Assign personalities based on personality probabilities: pnprb()
@@ -63,7 +63,7 @@
 630 r=RND:IF r<pnprb(pnrm) THEN pn2=pnrm ELSE IF r<pnprb(patt) THEN pn2=patt ELSE IF r<pnprb(prnd) THEN pn2=prnd ELSE pn2=pdef
 640 '
 650 ' Wait for key press
-660 CLS:IF smd=0 THEN ms$="Press key to start" ELSE ms$="Press any key to start":GOSUB 2260:CLS
+660 CLS:IF smd=0 THEN ms$="Press key to start" ELSE ms$="Press any key to start":GOSUB 2220:CLS
 670 '
 680 ' print personalities
 690 id1$="CPU 1":id2$="CPU 2"
@@ -74,207 +74,207 @@
 740 LOCATE 1,rows:PEN cl2:PRINT c2$
 750 '
 760 ' Initialize grid and starting positions
-765 LOCATE sx,sy:PAPER ctx:PEN cbg:PRINT STRING$(cols," "):LOCATE sx,sy:PRINT"Initializing...":PAPER cbg:PEN ctx
-770 GOSUB 2420:DIM grd(gw,gh):grd(0,0)=-1:' setup grid dimensions
-780 GOSUB 2340:' draw grid border
-790 GOSUB 2490:' define and draw starting positions and stats
-795 'lists of valid moves for player 1 and 2
-796 'element 0 of bls1,2 store the counter of valid moves e.g. bls1(0,0) counter of potential valid moves
-800 blmax=(gw+gh)*2:DIM bls1(blmax,1):DIM bls2(blmax,1)
-804 DIM vm(8,1):' array to store all potential 8 valid moves around a given block, first element at pos 0 stores the count of valid moves e.g.e vm(0,0)=5
-805 LOCATE sx,sy:PRINT STRING$(cols," ")
-810 '
-820 c1=st(id1,icn,0):c2=st(id2,icn,0)
-830 GOSUB 2210:' print block counts
-840 '
-850 ' Game LOOP
-860 turn=1:trn=0
-870 WHILE c1+c2<gw*gh
-880 '
-890 ' CPU turn
-900 trn=trn+1:trs=0
-910 IF turn=1 THEN id=id1:opp=id2:cpuclr=cl1:b$=b1$:pn=pn1:clx=c1x:cly=c1y
-920 IF turn=2 THEN id=id2:opp=id1:cpuclr=cl2:b$=b2$:pn=pn2:clx=c2x:cly=c2y
-930 LOCATE sx,sy:PRINT STRING$(cols," ")
-940 c1=st(id1,icn,0):c2=st(id2,icn,0):prg=ROUND((c1+c2)/(gwh)*100,2)
-950 PEN ctx:LOCATE sx,sy:PRINT "Turn";trn;STR$(prg);"%":PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
-960 '
-970 'Process cpu action based on personality
-980 act=0:ON pn+1 GOSUB 1290,1330,1370,1600
-990 c1=st(id1,icn,0):c2=st(id2,icn,0)
-1000 LOCATE clx,cly:PRINT SPC(LEN(mst$));
-1010 ' act 0 is no move found, 1 is move, 2 fight won, 3 fight loss
-1020 IF act=0 THEN GOTO 1160:'no valid move found, end game
-1030 ' print move or fg results to screen
-1040 IF act=1 THEN hx=tx:hy=ty:GOSUB 2140:SOUND 1,200,20,15:GOSUB 2140:' move highlight, play sound highlight
-1050 IF act=2 THEN hx=tx:hy=ty:GOSUB 2140:SOUND 1,142,20,15:SOUND 1,95,20,15:GOSUB 2140:' fight won highlight, play sound highlight
-1060 IF act=3 THEN hx=tx:hy=ty:GOSUB 2140:SOUND 1,95,20,15:SOUND 1,125,20,15:GOSUB 2140:' fight lost highlight, play sound highlight
-1070 IF act=1 OR act=2 THEN LOCATE ofx+tx,ofy+ty:PEN cpuclr:PRINT b$;
-1090 GOSUB 2210:' print block counts
-1100 GOSUB 2310:' delay routine
-1110 IF c1+c2>=gwh OR c1=0 OR c2=0 THEN GOTO 1200
-1120 IF turn=1 THEN turn=2 ELSE turn=1
-1130 trs=1
-1140 WEND
-1150 '
-1160 ' error: no valid move found
-1170 IF smd<>0 THEN ms$="Error: no valid move found" ELSE ms$="Err: no move found"
-1180 GOSUB 2260:GOTO 1250:' print error message and exit
+770 LOCATE sx,sy:PAPER ctx:PEN cbg:PRINT STRING$(cols," "):LOCATE sx,sy:PRINT"Initializing...":PAPER cbg:PEN ctx
+780 GOSUB 2380:DIM grd(gw,gh):grd(0,0)=-1:' setup grid dimensions
+790 GOSUB 2300:' draw grid border
+800 GOSUB 2450:' define and draw starting positions and stats
+810 'lists of valid moves for player 1 and 2
+820 'element 0 of bls1,2 store the counter of valid moves e.g. bls1(0,0) counter of potential valid moves
+830 blmax=(gw+gh)*2:DIM bls1(blmax,1):DIM bls2(blmax,1)
+840 DIM vm(8,1):' array to store all potential 8 valid moves around a given block, first element at pos 0 stores the count of valid moves e.g.e vm(0,0)=5
+850 LOCATE sx,sy:PRINT STRING$(cols," ")
+860 '
+870 c1=st(id1,icn,0):c2=st(id2,icn,0)
+880 GOSUB 2170:' print block counts
+890 '
+900 ' Game LOOP
+910 turn=1:trn=0
+920 WHILE c1+c2<gw*gh
+930 '
+940 ' CPU turn
+950 trn=trn+1:trs=0
+960 IF turn=1 THEN id=id1:opp=id2:cpuclr=cl1:b$=b1$:pn=pn1:clx=c1x:cly=c1y
+970 IF turn=2 THEN id=id2:opp=id1:cpuclr=cl2:b$=b2$:pn=pn2:clx=c2x:cly=c2y
+980 LOCATE sx,sy:PRINT STRING$(cols," ")
+990 c1=st(id1,icn,0):c2=st(id2,icn,0):prg=ROUND((c1+c2)/(gwh)*100,2)
+1000 PEN ctx:LOCATE sx,sy:PRINT "Turn";trn;STR$(prg);"%":PEN cpuclr:mst$="...":LOCATE clx,cly:PRINT mst$;
+1010 '
+1020 'Process cpu action based on personality
+1030 act=0:ON pn+1 GOSUB 1330,1370,1410,1560
+1040 c1=st(id1,icn,0):c2=st(id2,icn,0)
+1050 LOCATE clx,cly:PRINT SPC(LEN(mst$));
+1060 ' act 0 is no move found, 1 is move, 2 fight won, 3 fight loss
+1070 IF act=0 THEN GOTO 1200:'no valid move found, end game
+1080 ' print move or fg results to screen
+1090 IF act=1 THEN hx=tx:hy=ty:GOSUB 2100:SOUND 1,200,20,15:GOSUB 2100:' move highlight, play sound highlight
+1100 IF act=2 THEN hx=tx:hy=ty:GOSUB 2100:SOUND 1,142,20,15:SOUND 1,95,20,15:GOSUB 2100:' fight won highlight, play sound highlight
+1110 IF act=3 THEN hx=tx:hy=ty:GOSUB 2100:SOUND 1,95,20,15:SOUND 1,125,20,15:GOSUB 2100:' fight lost highlight, play sound highlight
+1120 IF act=1 OR act=2 THEN LOCATE ofx+tx,ofy+ty:PEN cpuclr:PRINT b$;
+1130 GOSUB 2170:' print block counts
+1140 GOSUB 2270:' delay routine
+1150 IF c1+c2>=gwh OR c1=0 OR c2=0 THEN GOTO 1240
+1160 IF turn=1 THEN turn=2 ELSE turn=1
+1170 trs=1
+1180 WEND
 1190 '
-1200 ' end game
-1210 IF smd<>0 THEN ms$="Game Over: "+id1$+":"+STR$(c1)+" "+id2$+":"+STR$(c2) ELSE ms$="Game Over:"+MID$(STR$(c1),2)+"/"+MID$(STR$(c2),2)
-1220 GOSUB 2260
-1230 IF c1>c2 THEN ms$="CPU 1 wins!" ELSE IF c1<c2 THEN ms$="CPU 2 wins!" ELSE ms$="Draw!"
-1240 GOSUB 2260
-1250 CLS:ms$="Play again? (Y:N)":LOCATE hcols-INT(LEN(ms$)/2),hrows:INPUT"Play Again? (Y:N)",a$
-1260 IF UPPER$(a$)="Y" THEN RUN ELSE GOTO 2790
-1270 END
-1280 '
-1290 ' CPU Normal
-1300 GOSUB 1370
-1310 RETURN
+1200 ' error: no valid move found
+1210 IF smd<>0 THEN ms$="Error: no valid move found" ELSE ms$="Err: no move found"
+1220 GOSUB 2220:GOTO 1290:' print error message and exit
+1230 '
+1240 ' end game
+1250 IF smd<>0 THEN ms$="Game Over: "+id1$+":"+STR$(c1)+" "+id2$+":"+STR$(c2) ELSE ms$="Game Over:"+MID$(STR$(c1),2)+"/"+MID$(STR$(c2),2)
+1260 GOSUB 2220
+1270 IF c1>c2 THEN ms$="CPU 1 wins!" ELSE IF c1<c2 THEN ms$="CPU 2 wins!" ELSE ms$="Draw!"
+1280 GOSUB 2220
+1290 CLS:ms$="Play again? (Y:N)":LOCATE hcols-INT(LEN(ms$)/2),hrows:INPUT"Play Again? (Y:N)",a$
+1300 IF UPPER$(a$)="Y" THEN RUN ELSE GOTO 2760
+1310 END
 1320 '
-1330 ' CPU Attacker
-1340 GOSUB 1370
+1330 ' CPU Normal
+1340 GOSUB 1410
 1350 RETURN
 1360 '
-1370 ' CPU Random
-1380 bx=0:by=0:tx=0:ty=0
-1390 GOSUB 1640:' populate bls1 with all valid moves
-1400 tmp=bls1(0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
-1410 r=INT(RND*tmp)+1:tmpx=bls1(r,0):tmpy=bls1(r,1)
-1420 ' We found a random valid block next we need to find a valid random target
-1430 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=bx:hy=by:GOSUB 2140:' highlight selected valid block
-1440 tmpopp=opp:GOSUB 1805:'populate valid moves
-1530 tmp=vm(0,0):IF tmp<1 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
-1540 r=INT(RND*tmp)+1:tx=vm(r,0):ty=vm(r,1)
-1550 bx=tmpx:by=tmpy:st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
-1560 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 1950'if target is opp, resolve fight
-1570 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1840:' update stats on move or won fight
+1370 ' CPU Attacker
+1380 GOSUB 1410
+1390 RETURN
+1400 '
+1410 ' CPU Random
+1420 bx=0:by=0:tx=0:ty=0
+1430 GOSUB 1600:' populate bls1 with all valid moves
+1440 tmp=bls1(0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
+1450 r=INT(RND*tmp)+1:tmpx=bls1(r,0):tmpy=bls1(r,1)
+1460 ' We found a random valid block next we need to find a valid random target
+1470 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=bx:hy=by:GOSUB 2100:' highlight selected valid block
+1480 tmpopp=opp:GOSUB 1760:'populate valid moves
+1490 tmp=vm(0,0):IF tmp<1 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
+1500 r=INT(RND*tmp)+1:tx=vm(r,0):ty=vm(r,1)
+1510 bx=tmpx:by=tmpy:st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
+1520 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 1970'if target is opp, resolve fight
+1530 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1870:' update stats on move or won fight
+1540 RETURN
+1550 '
+1560 ' CPU Defender
+1570 GOSUB 1410
 1580 RETURN
 1590 '
-1600 ' CPU Defender
-1610 GOSUB 1370
-1620 RETURN
-1630 '
-1640 ' Populate bls1 with all valid moves
-1650 tmp=0
-1660 minx=st(id,imn,0):miny=st(id,imn,1):maxx=st(id,imx,0):maxy=st(id,imx,1)
-1670 FOR x=minx TO maxx:FOR y=miny TO maxy
-1680 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=x:hy=y:GOSUB 2140:' highlight grd scanning
-1700 IF grd(x,y)<>id THEN GOTO 1800
-1710 FOR dx=-1 TO 1:FOR dy=-1 TO 1
-1720 IF dx=0 AND dy=0 THEN GOTO 1780
-1730 nx=x+dx:ny=y+dy
-1740 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN GOTO 1780
-1750 IF grd(nx,ny)=0 OR grd(nx,ny)=opp THEN tmp=tmp+1 ELSE 1780
-1770 bls1(0,0)=tmp:bls1(tmp,0)=x:bls1(tmp,1)=y:GOTO 1800:' valid block found move to next
-1780 NEXT:NEXT
-1800 NEXT:NEXT
-1802 RETURN
-1804 '
-1805 ' populate valid moves for tmpopp and block at tmpx,tmpy
-1806 tmp=0
-1807 FOR dx=-1 TO 1:FOR dy=-1 TO 1
-1808 IF dx=0 AND dy=0 THEN GOTO 1812
-1809 nx=tmpx+dx:ny=tmpy+dy:hx=nx:hy=ny:GOSUB 2140
-1810 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 1812
-1811 IF grd(nx,ny)=0 OR grd(nx,ny)=tmpopp THEN tmp=tmp+1:vm(tmp,0)=nx:vm(tmp,1)=ny ELSE 1812
-1812 NEXT:NEXT
-1813 vm(0,0)=tmp
-1820 RETURN
-1830 '
-1840 ' update stats after move, or won fight
-1850 tmp=st(id,icn,0)+1:st(id,icn,0)=tmp:st(id,ism,0)=st(id,ism,0)+tx:st(id,ism,1)=st(id,ism,1)+ty:st(id,ivg,0)=INT(st(id,ism,0)/tmp):st(id,ivg,1)=INT(st(id,ism,1)/tmp)
-1860 st(id,imn,0)=MIN(st(id,imn,0),tx):st(id,imn,1)=MIN(st(id,imn,1),ty):st(id,imx,0)=MAX(st(id,imx,0),tx):st(id,imx,1)=MAX(st(id,imx,1),ty)
-1870 IF act<>2 THEN RETURN
-1880 'there was a fight and opp lost a block
-1890 IF st(opp,icn,0)-1<1 THEN st(opp,icn,0)=0:RETURN
-1900 tmp=st(opp,icn,0)-1:st(opp,ism,0)=st(opp,ism,0)-tx:st(opp,ism,1)=st(opp,ism,1)-ty:st(opp,ivg,0)=INT(st(opp,ism,0)/tmp):st(opp,ivg,1)=INT(st(opp,ism,1)/tmp):st(opp,icn,0)=tmp
-1910 GOSUB 1990:' recalculate min max x y if needed due to opp's lost block
-1930 RETURN
-1940 '
-1950 ' resolve fg
-1960 r=RND:IF r>0.5 THEN act=2 ELSE act=3
-1970 RETURN
-1980 '
-1990 ' recalculate minx maxx miny maxy
-1991 IF st(opp,imn,0)=tx OR st(opp,imn,1)=ty OR st(opp,imx,0)=tx OR st(opp,imx,1)=ty THEN 2000 ELSE RETURN
-2000 minx=st(opp,imn,0):maxx=st(opp,imx,0):miny=st(opp,imn,1):maxy=st(opp,imx,1)
-2030 FOR i=minx TO maxx:FOR j=miny TO maxy:IF grd(i,j)=opp THEN st(opp,imn,0)=i:GOTO 2040 ELSE NEXT:NEXT
-2040 FOR i=maxx TO minx STEP -1:FOR j=miny TO maxy:IF grd(i,j)=opp THEN st(opp,imx,0)=i:GOTO 2050 ELSE NEXT:NEXT
-2050 FOR j=miny TO maxy:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imn,1)=j:GOTO 2060 ELSE NEXT:NEXT
-2060 FOR j=maxy TO miny STEP -1:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imx,1)=j:GOTO 2070 ELSE NEXT:NEXT
-2070 RETURN
-2130 '
-2140 ' highlight
-2150 IF hx<1 OR hy<1 OR hx>gw OR hy>gh THEN RETURN
-2160 LOCATE ofx+hx,ofy+hy:PEN cpuclr:PRINT hb$
-2170 IF grd(hx,hy)=id1 THEN PEN cl1:a$=b1$ ELSE IF grd(hx,hy)=id2 THEN PEN cl2:a$=b2$ ELSE a$=eb$
-2180 LOCATE ofx+hx,ofy+hy:PRINT a$
-2190 RETURN
-2200 '
-2210 ' print block counts
-2220 PEN cl1:LOCATE cols-3,c1y:PRINT USING "####";c1;
-2230 PEN cl2:LOCATE cols-3,c2y:PRINT USING "####";c2;
-2240 RETURN
-2250 '
-2260 ' print centered message
-2270 tmp=INT(LEN(ms$)/2):tmpx=MAX(1,hcols-tmp):LOCATE tmpx,hrows:PEN ctx:PRINT ms$:tmp=LEN(ms$)
-2280 CLEAR INPUT:CALL &BB18:LOCATE tmpx,hrows:PRINT SPC(tmp)
-2290 RETURN
-2300 '
-2310 ' delay routine
-2320 IF dly>0 THEN FOR i=0 TO dly:NEXT:RETURN' delay routine
-2330 '
-2340 ' draw grid border
-2350 ' draw top and bottom horizontal
-2360 PEN ctx:LOCATE ofx,ofy:PRINT CHR$(150)+STRING$(gw,CHR$(154))+CHR$(156)
-2370 LOCATE ofx,ofy+gh+1:PRINT CHR$(147)+STRING$(gw,CHR$(154))+CHR$(153)
-2380 ' draw verticals
-2390 a$=CHR$(149):FOR i=ofy+1 TO gh+ofy:LOCATE ofx,i:PRINT a$;:LOCATE ofx+gw+1,i:PRINT a$:NEXT
-2400 RETURN
-2410 '
-2420 ' Define grid size
-2430 gw=MAX(INT(cols/3),INT(RND*cols)+2):gw=MIN(gw,cols-2):hgw=INT(gw/2):IF gw MOD 2=0 THEN gw=gw-1' Ensure gw is odd, -2 cols for vertical grid lines
-2440 gh=MAX(INT(rows/3),INT(RND*rows)+2):gh=MIN(gh,rows-5):hgh=INT(gh/2):IF gh MOD 2=0 THEN gh=gh-1' Ensure gh is odd, -5 rows for 2 cpu rows, 1 status line and 2 grid rows
-2450 gwh=gw*gh
-2460 ofx=INT((cols-gw)/2):ofy=INT((rows-gh)/2)+1:' locate offsets: ofy+1 row to leave a blank line for the status line
-2470 RETURN
-2480 '
-2490 ' Define starting positions
-2500 st1x=INT(gw/2)+1:st1y=1:st2x=INT(gw/2)+1:st2y=gh
-2510 FOR i=0 TO ial:st(id1,i,0)=st1x:st(id1,i,1)=st1y:st(id2,i,0)=st2x:st(id2,i,1)=st2y:NEXT
-2520 c1=1:st(id1,icn,0)=c1:c2=1:st(id2,icn,0)=c2
-2530 grd(st1x,st1y)=id1:grd(st2x,st2y)=id2:
-2540 LOCATE  ofx+st1x,ofy+st1y:PEN cl1:PRINT b1$:LOCATE  ofx+st2x,ofy+st2y:PEN cl2:PRINT b2$
-2550 p=0.1:sb=MAX(1,INT((gwh/2)*p)):' starting blocks formula
-2560 ' randomly select starting blocks for reach player
-2570 WHILE c1<sb OR c2<sb
-2580 ' Player 1 and 2 block selection
-2590 FOR i=id1 TO id2
-2600 tmp=st(i,icn,0)
-2610 IF tmp>=sb THEN 2690
-2625 'id1 has blocks from y=1 to y=gh/2-1, e.g. if gh=11 id1 y ranges from 1-5. Similarly for id2 is from 7-11.
-2620 IF i=id1 THEN tmpx=INT(RND*gw)+1:tmpy=INT(RND*INT(gh/2))+1 ELSE tmpx=INT(RND*gw)+1:tmpy=INT(RND*(gh-INT(gh/2)-1))+INT(gh/2)+2
-2630 IF grd(tmpx,tmpy)<>0 THEN 2690
-2640 grd(tmpx,tmpy)=i:tmp=tmp+1:st(i,icn,0)=tmp:st(i,ism,0)=st(i,ism,0)+tmpx:st(i,ism,1)=st(i,ism,1)+tmpy
-2650 st(i,ivg,0)=INT(st(i,ism,0)/tmp):st(i,ivg,1)=INT(st(i,ism,1)/tmp):st(i,imn,0)=MIN(st(i,imn,0),tmpx):st(i,imn,1)=MIN(st(i,imn,1),tmpy)
-2660 st(i,imx,0)=MAX(st(i,imx,0),tmpx):st(i,imx,1)=MAX(st(i,imx,1),tmpy)
-2670 IF i=id1 THEN cpuclr=cl1:a$=b1$ ELSE cpuclr=cl2:a$=b2$
-2680 SOUND 1,1500,2,10:LOCATE ofx+tmpx,ofy+tmpy:PEN cpuclr:PRINT a$
-2690 NEXT
-2700 c1=st(id1,icn,0):c2=st(id2,icn,0)
-2710 WEND
-2720 RETURN
-2730 '
-2740 ' error handling
-2750 ms$="Error with code"+STR$(ERR)+" at line"+STR$(ERL):GOSUB 2260
-2760 MODE 2:INK 0,1:INK 1,26:PEN 1:PAPER 0:BORDER 1:LOCATE 1,1:PRINT ms$
-2770 IF ERR=5 THEN PRINT"Improper Argument"
-2780 END
-2790 INK 0,1:INK 1,26:PAPER 0:PEN 1:BORDER 1:MODE 2:END
-2800 ' DATA
-2810 DATA "start","sum","avg","min","max","sel","last","count":' sel is last selected position, last is last occupied position
-2820 DATA "Normal","Attacker","Random","Defender":' Personality names
-2830 DATA "Nrm","Att","Rnd","Def":' Shorthands for Personality names
+1600 ' Populate bls1 with all valid moves
+1610 tmp=0
+1620 minx=st(id,imn,0):miny=st(id,imn,1):maxx=st(id,imx,0):maxy=st(id,imx,1)
+1630 FOR x=minx TO maxx:FOR y=miny TO maxy
+1640 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=x:hy=y:GOSUB 2100:' highlight grd scanning
+1650 IF grd(x,y)<>id THEN GOTO 1730
+1660 FOR dx=-1 TO 1:FOR dy=-1 TO 1
+1670 IF dx=0 AND dy=0 THEN GOTO 1720
+1680 nx=x+dx:ny=y+dy
+1690 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN GOTO 1720
+1700 IF grd(nx,ny)=0 OR grd(nx,ny)=opp THEN tmp=tmp+1 ELSE 1720
+1710 bls1(0,0)=tmp:bls1(tmp,0)=x:bls1(tmp,1)=y:GOTO 1730:' valid block found move to next
+1720 NEXT:NEXT
+1730 NEXT:NEXT
+1740 RETURN
+1750 '
+1760 ' populate valid moves for tmpopp and block at tmpx,tmpy
+1770 tmp=0
+1780 FOR dx=-1 TO 1:FOR dy=-1 TO 1
+1790 IF dx=0 AND dy=0 THEN GOTO 1830
+1800 nx=tmpx+dx:ny=tmpy+dy
+1810 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 1830
+1820 IF grd(nx,ny)=0 OR grd(nx,ny)=tmpopp THEN tmp=tmp+1:vm(tmp,0)=nx:vm(tmp,1)=ny ELSE 1830
+1830 NEXT:NEXT
+1840 vm(0,0)=tmp
+1850 RETURN
+1860 '
+1870 ' update stats after move, or won fight
+1880 tmp=st(id,icn,0)+1:st(id,icn,0)=tmp:st(id,ism,0)=st(id,ism,0)+tx:st(id,ism,1)=st(id,ism,1)+ty:st(id,ivg,0)=INT(st(id,ism,0)/tmp):st(id,ivg,1)=INT(st(id,ism,1)/tmp)
+1890 st(id,imn,0)=MIN(st(id,imn,0),tx):st(id,imn,1)=MIN(st(id,imn,1),ty):st(id,imx,0)=MAX(st(id,imx,0),tx):st(id,imx,1)=MAX(st(id,imx,1),ty)
+1900 IF act<>2 THEN RETURN
+1910 'there was a fight and opp lost a block
+1920 IF st(opp,icn,0)-1<1 THEN st(opp,icn,0)=0:RETURN
+1930 tmp=st(opp,icn,0)-1:st(opp,ism,0)=st(opp,ism,0)-tx:st(opp,ism,1)=st(opp,ism,1)-ty:st(opp,ivg,0)=INT(st(opp,ism,0)/tmp):st(opp,ivg,1)=INT(st(opp,ism,1)/tmp):st(opp,icn,0)=tmp
+1940 GOSUB 2010:' recalculate min max x y if needed due to opp's lost block
+1950 RETURN
+1960 '
+1970 ' resolve fg
+1980 r=RND:IF r>0.5 THEN act=2 ELSE act=3
+1990 RETURN
+2000 '
+2010 ' recalculate minx maxx miny maxy
+2020 IF st(opp,imn,0)=tx OR st(opp,imn,1)=ty OR st(opp,imx,0)=tx OR st(opp,imx,1)=ty THEN 2030 ELSE RETURN
+2030 minx=st(opp,imn,0):maxx=st(opp,imx,0):miny=st(opp,imn,1):maxy=st(opp,imx,1)
+2040 FOR i=minx TO maxx:FOR j=miny TO maxy:IF grd(i,j)=opp THEN st(opp,imn,0)=i:GOTO 2050 ELSE NEXT:NEXT
+2050 FOR i=maxx TO minx STEP -1:FOR j=miny TO maxy:IF grd(i,j)=opp THEN st(opp,imx,0)=i:GOTO 2060 ELSE NEXT:NEXT
+2060 FOR j=miny TO maxy:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imn,1)=j:GOTO 2070 ELSE NEXT:NEXT
+2070 FOR j=maxy TO miny STEP -1:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imx,1)=j:GOTO 2080 ELSE NEXT:NEXT
+2080 RETURN
+2090 '
+2100 ' highlight
+2110 IF hx<1 OR hy<1 OR hx>gw OR hy>gh THEN RETURN
+2120 LOCATE ofx+hx,ofy+hy:PEN cpuclr:PRINT hb$
+2130 IF grd(hx,hy)=id1 THEN PEN cl1:a$=b1$ ELSE IF grd(hx,hy)=id2 THEN PEN cl2:a$=b2$ ELSE a$=eb$
+2140 LOCATE ofx+hx,ofy+hy:PRINT a$
+2150 RETURN
+2160 '
+2170 ' print block counts
+2180 PEN cl1:LOCATE cols-3,c1y:PRINT USING "####";c1;
+2190 PEN cl2:LOCATE cols-3,c2y:PRINT USING "####";c2;
+2200 RETURN
+2210 '
+2220 ' print centered message
+2230 tmp=INT(LEN(ms$)/2):tmpx=MAX(1,hcols-tmp):LOCATE tmpx,hrows:PEN ctx:PRINT ms$:tmp=LEN(ms$)
+2240 CLEAR INPUT:CALL &BB18:LOCATE tmpx,hrows:PRINT SPC(tmp)
+2250 RETURN
+2260 '
+2270 ' delay routine
+2280 IF dly>0 THEN FOR i=0 TO dly:NEXT:RETURN' delay routine
+2290 '
+2300 ' draw grid border
+2310 ' draw top and bottom horizontal
+2320 PEN ctx:LOCATE ofx,ofy:PRINT CHR$(150)+STRING$(gw,CHR$(154))+CHR$(156)
+2330 LOCATE ofx,ofy+gh+1:PRINT CHR$(147)+STRING$(gw,CHR$(154))+CHR$(153)
+2340 ' draw verticals
+2350 a$=CHR$(149):FOR i=ofy+1 TO gh+ofy:LOCATE ofx,i:PRINT a$;:LOCATE ofx+gw+1,i:PRINT a$:NEXT
+2360 RETURN
+2370 '
+2380 ' Define grid size
+2390 gw=MAX(INT(cols/3),INT(RND*cols)+2):gw=MIN(gw,cols-2):hgw=INT(gw/2):IF gw MOD 2=0 THEN gw=gw-1' Ensure gw is odd, -2 cols for vertical grid lines
+2400 gh=MAX(INT(rows/3),INT(RND*rows)+2):gh=MIN(gh,rows-5):hgh=INT(gh/2):IF gh MOD 2=0 THEN gh=gh-1' Ensure gh is odd, -5 rows for 2 cpu rows, 1 status line and 2 grid rows
+2410 gwh=gw*gh
+2420 ofx=INT((cols-gw)/2):ofy=INT((rows-gh)/2)+1:' locate offsets: ofy+1 row to leave a blank line for the status line
+2430 RETURN
+2440 '
+2450 ' Define starting positions
+2460 st1x=INT(gw/2)+1:st1y=1:st2x=INT(gw/2)+1:st2y=gh
+2470 FOR i=0 TO ial:st(id1,i,0)=st1x:st(id1,i,1)=st1y:st(id2,i,0)=st2x:st(id2,i,1)=st2y:NEXT
+2480 c1=1:st(id1,icn,0)=c1:c2=1:st(id2,icn,0)=c2
+2490 grd(st1x,st1y)=id1:grd(st2x,st2y)=id2:
+2500 LOCATE  ofx+st1x,ofy+st1y:PEN cl1:PRINT b1$:LOCATE  ofx+st2x,ofy+st2y:PEN cl2:PRINT b2$
+2510 p=0.1:sb=MAX(1,INT((gwh/2)*p)):' starting blocks formula
+2520 ' randomly select starting blocks for reach player
+2530 WHILE c1<sb OR c2<sb
+2540 ' Player 1 and 2 block selection
+2550 FOR i=id1 TO id2
+2560 tmp=st(i,icn,0)
+2570 IF tmp>=sb THEN 2660
+2590 'id1 has blocks from y=1 to y=gh/2-1, e.g. if gh=11 id1 y ranges from 1-5. Similarly for id2 is from 7-11.
+2580 IF i=id1 THEN tmpx=INT(RND*gw)+1:tmpy=INT(RND*INT(gh/2))+1 ELSE tmpx=INT(RND*gw)+1:tmpy=INT(RND*(gh-INT(gh/2)-1))+INT(gh/2)+2
+2600 IF grd(tmpx,tmpy)<>0 THEN 2660
+2610 grd(tmpx,tmpy)=i:tmp=tmp+1:st(i,icn,0)=tmp:st(i,ism,0)=st(i,ism,0)+tmpx:st(i,ism,1)=st(i,ism,1)+tmpy
+2620 st(i,ivg,0)=INT(st(i,ism,0)/tmp):st(i,ivg,1)=INT(st(i,ism,1)/tmp):st(i,imn,0)=MIN(st(i,imn,0),tmpx):st(i,imn,1)=MIN(st(i,imn,1),tmpy)
+2630 st(i,imx,0)=MAX(st(i,imx,0),tmpx):st(i,imx,1)=MAX(st(i,imx,1),tmpy)
+2640 IF i=id1 THEN cpuclr=cl1:a$=b1$ ELSE cpuclr=cl2:a$=b2$
+2650 SOUND 1,1500,2,10:LOCATE ofx+tmpx,ofy+tmpy:PEN cpuclr:PRINT a$
+2660 NEXT
+2670 c1=st(id1,icn,0):c2=st(id2,icn,0)
+2680 WEND
+2690 RETURN
+2700 '
+2710 ' error handling
+2720 ms$="Error with code"+STR$(ERR)+" at line"+STR$(ERL):GOSUB 2220
+2730 MODE 2:INK 0,1:INK 1,26:PEN 1:PAPER 0:BORDER 1:LOCATE 1,1:PRINT ms$
+2740 IF ERR=5 THEN PRINT"Improper Argument"
+2750 END
+2760 INK 0,1:INK 1,26:PAPER 0:PEN 1:BORDER 1:MODE 2:END
+2770 ' DATA
+2780 DATA "start","sum","avg","min","max","sel","last","count":' sel is last selected position, last is last occupied position
+2790 DATA "Normal","Attacker","Random","Defender":' Personality names
+2800 DATA "Nrm","Att","Rnd","Def":' Shorthands for Personality names
