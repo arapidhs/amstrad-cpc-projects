@@ -78,7 +78,8 @@
 770 GOSUB 2420:DIM grd(gw,gh):grd(0,0)=-1:' setup grid dimensions
 780 GOSUB 2340:' draw grid border
 790 GOSUB 2490:' define and draw starting positions and stats
-800 blmax=(gw+gh)*2:DIM bls1(blmax,1):blc1=0:DIM bls2(blmax,1):blc1=2:'lists of valid moves for player 1of and 2of, blc1,2 point to the end of the list
+800 blmax=(gw+gh)*2:DIM bls1(blmax,1):blc1=0:DIM bls2(blmax,1):blc2=0:'lists of valid moves for player 1of and 2of, blc1,2 point to the end of the list
+804 vld=0:DIM vm(8,1):' array to store all potential 8a valid moves around a given block
 805 LOCATE sx,sy:PRINT STRING$(cols," ")
 810 '
 820 c1=st(id1,icn,0):c2=st(id2,icn,0)
@@ -136,23 +137,21 @@
 1350 RETURN
 1360 '
 1370 ' CPU Random
-1380 bx=0:by=0:tx=0:ty=0:bl=0
+1380 bx=0:by=0:tx=0:ty=0
 1390 GOSUB 1640:' populate bls1 with all valid moves
-1400 IF bl=0 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
-1410 r=INT(RND*bl)+1:bx=bls1(r,0):by=bls1(r,1)
+1400 IF blc1=0 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
+1410 r=INT(RND*blc1)+1:bx=bls1(r,0):by=bls1(r,1)
 1420 ' We found a random valid block next we need to find a valid random target
 1430 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=bx:hy=by:GOSUB 2140:' highlight selected valid block
-1440 bl=0
+1440 vld=0
 1450 FOR dx=-1 TO 1:FOR dy=-1 TO 1
 1460 IF dx=0 AND dy=0 THEN GOTO 1510
 1470 nx=bx+dx:ny=by+dy
 1480 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN 1510
-1490 IF grd(nx,ny)<>0 AND grd(nx,ny)<>opp THEN 1510
-1500 bl=bl+1:bls1(bl,0)=nx:bls1(bl,1)=ny
-1510 NEXT dy
-1520 NEXT dx
-1530 IF bl=0 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
-1540 r=INT(RND*bl)+1:tx=bls1(r,0):ty=bls1(r,1)
+1490 IF grd(nx,ny)=0 OR grd(nx,ny)=opp THEN vld=vld+1:vm(vld,0)=nx:vm(vld,1)=ny ELSE 1510
+1510 NEXT:NEXT
+1530 IF vld=0 THEN act=0:RETURN:' no valid target found, we should never normally reach this state
+1540 r=INT(RND*vld)+1:tx=vm(r,0):ty=vm(r,1)
 1550 st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
 1560 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 1950'if target is opp, resolve fight
 1570 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1840:' update stats on move or won fight
@@ -163,23 +162,20 @@
 1620 RETURN
 1630 '
 1640 ' Populate bls1 with all valid moves
-1650 bl=0
+1650 blc=0
 1660 minx=st(id,imn,0):miny=st(id,imn,1):maxx=st(id,imx,0):maxy=st(id,imx,1)
 1670 FOR x=minx TO maxx:FOR y=miny TO maxy
 1680 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=x:hy=y:GOSUB 2140:' highlight grd scanning
-1690 IF bl=blmax THEN RETURN:' full list populated, return
 1700 IF grd(x,y)<>id THEN GOTO 1800
 1710 FOR dx=-1 TO 1:FOR dy=-1 TO 1
 1720 IF dx=0 AND dy=0 THEN GOTO 1780
 1730 nx=x+dx:ny=y+dy
 1740 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN GOTO 1780
-1750 IF grd(nx,ny)<>0 AND grd(nx,ny)<>opp THEN GOTO 1780
-1760 bl=bl+1:' found valid target at nx,ny
-1770 bls1(bl,0)=x:bls1(bl,1)=y:GOTO 1800:' valid block found move to next
-1780 NEXT dy
-1790 NEXT dx
-1800 NEXT y
-1810 NEXT x
+1750 IF grd(nx,ny)=0 OR grd(nx,ny)=opp THEN blc1=blc1+1 ELSE 1780
+1770 bls1(blc1,0)=x:bls1(blc1,1)=y:GOTO 1800:' valid block found move to next
+1775 IF blc1=blmax THEN RETURN
+1780 NEXT:NEXT
+1800 NEXT:NEXT
 1820 RETURN
 1830 '
 1840 ' update stats after move, or won fight
