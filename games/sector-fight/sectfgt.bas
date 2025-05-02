@@ -79,8 +79,8 @@
 790 GOSUB 2300:' draw grid border
 800 GOSUB 2450:' define and draw starting positions and stats
 810 'lists of valid moves for player 1 and 2
-820 'element 0 of bls1,2 store the counter of valid moves e.g. bls1(0,0) counter of potential valid moves
-830 blmax=(gw+gh)*2:DIM bls1(blmax,1):DIM bls2(blmax,1)
+820 'element 0 of bls store the counter of valid moves e.g. bls(0,0,0) counter of potential valid moves for player 1 while bls(1,0,0) for player 2
+830 blmax=(gw+gh)*2:DIM bls(1,blmax,1)' REM bls(0) stores list for player id1, bls(2) for player id2
 840 DIM vm(8,1):' array to store all potential 8 valid moves around a given block, first element at pos 0 stores the count of valid moves e.g.e vm(0,0)=5
 850 LOCATE sx,sy:PRINT STRING$(cols," ")
 860 '
@@ -139,10 +139,10 @@
 1390 RETURN
 1400 '
 1410 ' CPU Random
-1420 bx=0:by=0:tx=0:ty=0
-1430 GOSUB 1600:' populate bls1 with all valid moves
-1440 tmp=bls1(0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
-1450 r=INT(RND*tmp)+1:tmpx=bls1(r,0):tmpy=bls1(r,1)
+1420 ids=id-1:bx=0:by=0:tx=0:ty=0
+1430 GOSUB 1600:' populate bls with all valid moves
+1440 tmp=bls(ids,0,0):IF tmp<1 THEN act=0:RETURN:' no valid move found, we should never reach this state normally
+1450 r=INT(RND*tmp)+1:tmpx=bls(ids,r,0):tmpy=bls(ids,r,1)
 1460 ' We found a random valid block next we need to find a valid random target
 1470 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=bx:hy=by:GOSUB 2100:' highlight selected valid block
 1480 tmpopp=opp:GOSUB 1760:'populate valid moves
@@ -157,18 +157,18 @@
 1570 GOSUB 1410
 1580 RETURN
 1590 '
-1600 ' Populate bls1 with all valid moves
-1610 tmp=0
+1600 ' Populate bls list with all valid moves for id
+1610 tmp=0:ids=id-1
 1620 minx=st(id,imn,0):miny=st(id,imn,1):maxx=st(id,imx,0):maxy=st(id,imx,1)
 1630 FOR x=minx TO maxx:FOR y=miny TO maxy
-1640 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=x:hy=y:GOSUB 2100:' highlight grd scanning
+1640 IF dbgscan=1 THEN SOUND 1,1000,2,15:hx=x:hy=y:GOSUB 2100:' highlight grid scanning
 1650 IF grd(x,y)<>id THEN GOTO 1730
 1660 FOR dx=-1 TO 1:FOR dy=-1 TO 1
 1670 IF dx=0 AND dy=0 THEN GOTO 1720
 1680 nx=x+dx:ny=y+dy
 1690 IF nx<1 OR nx>gw OR ny<1 OR ny>gh THEN GOTO 1720
 1700 IF grd(nx,ny)=0 OR grd(nx,ny)=opp THEN tmp=tmp+1 ELSE 1720
-1710 bls1(0,0)=tmp:bls1(tmp,0)=x:bls1(tmp,1)=y:GOTO 1730:' valid block found move to next
+1710 bls(ids,0,0)=tmp:bls(ids,tmp,0)=x:bls(ids,tmp,1)=y:GOTO 1730:' valid block found move to next
 1720 NEXT:NEXT
 1730 NEXT:NEXT
 1740 RETURN
