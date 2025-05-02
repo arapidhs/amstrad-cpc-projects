@@ -171,7 +171,16 @@
 1710 RETURN
 1720 '
 1730 ' Human
-1740 LOCATE 1,1:PRINT"Waiting for human";:CALL &BB18
+1731 hx=st(id,isl,0):hy=st(id,isl,1):tmpx=hx:tmpy=hy:' Initialize cursor at last selected position
+1732 GOSUB 2582:' Highlight cursor
+1733 WHILE 1:CLEAR INPUT
+1734 a$=INKEY$:IF a$="" THEN GOTO 1734
+1735 tmpx=hx:tmpy=hy
+1736 IF a$=CHR$(240) THEN hy=hy-1 ELSE IF a$=CHR$(241) THEN hy=hy+1 ELSE IF a$=CHR$(242) THEN hx=hx-1 ELSE IF a$=CHR$(243) THEN hx=hx+1 ELSE IF a$=CHR$(32) THEN 1740 ELSE GOTO 1733
+1738 IF hx<1 THEN hx=1 ELSE IF hx>gw THEN hx=gw ELSE IF hy<1 THEN hy=1 ELSE IF hy>gh THEN hy=gh
+1739 GOSUB 2582:GOTO 1733:'Highlight cursor and WEND
+1740 IF grd(hx,hy)=id THEN SOUND 1,0,2,12,0,1:ENT -1,1,100,1 ELSE SOUND 1,300,10,10:SOUND 1,400,10,10
+1749 WEND
 1750 RETURN
 1760 '
 1770 ' action handler
@@ -256,6 +265,15 @@
 2560 IF grd(hx,hy)=id1 THEN PEN cl1:a$=b1$ ELSE IF grd(hx,hy)=id2 THEN PEN cl2:a$=b2$ ELSE a$=eb$
 2570 LOCATE ofx+hx,ofy+hy:PRINT a$
 2580 RETURN
+2581 '
+2582 'highlight human cursor
+2583 'restore previous position
+2584 IF grd(tmpx,tmpy)=id1 THEN PEN cl1:tmp$=b1$ ELSE IF grd(tmpx,tmpy)=id2 THEN PEN cl2:tmp$=b2$ ELSE tmp$=eb$
+2585 LOCATE ofx+tmpx,ofy+tmpy:PRINT tmp$
+2586 PEN ctx:IF grd(hx,hy)=id1 THEN PAPER cl1 ELSE IF grd(hx,hy)=id2 THEN PAPER cl2 ELSE PAPER cbg
+2587 LOCATE ofx+hx,ofy+hy:PRINT hb$
+2588 PAPER cbg:PEN cpuclr
+2589 RETURN
 2590 '
 2600 ' print block counts
 2610 PEN cl1:LOCATE cols-3,c1y:PRINT USING "####";c1;
