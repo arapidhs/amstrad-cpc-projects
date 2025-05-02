@@ -104,8 +104,7 @@
 1040 IF act=1 THEN hx=tx:hy=ty:GOSUB 2140:SOUND 1,200,20,15:GOSUB 2140:' move highlight, play sound highlight
 1050 IF act=2 THEN hx=tx:hy=ty:GOSUB 2140:SOUND 1,142,20,15:SOUND 1,95,20,15:GOSUB 2140:' fight won highlight, play sound highlight
 1060 IF act=3 THEN hx=tx:hy=ty:GOSUB 2140:SOUND 1,95,20,15:SOUND 1,125,20,15:GOSUB 2140:' fight lost highlight, play sound highlight
-1070 IF act=1 OR act=2 THEN grd(tx,ty)=id
-1080 IF grd(tx,ty)=id THEN LOCATE ofx+tx,ofy+ty:PEN cpuclr:PRINT b$;
+1070 IF act=1 OR act=2 THEN LOCATE ofx+tx,ofy+ty:PEN cpuclr:PRINT b$;
 1090 GOSUB 2210:' print block counts
 1100 GOSUB 2310:' delay routine
 1110 IF c1+c2>=gwh OR c1=0 OR c2=0 THEN GOTO 1200
@@ -154,7 +153,7 @@
 1540 r=INT(RND*bl)+1:tx=bls1(r,0):ty=bls1(r,1)
 1550 st(id,ilt,0)=tx:st(id,ilt,1)=ty:st(id,isl,0)=bx:st(id,isl,1)=by
 1560 IF grd(tx,ty)=0 THEN act=1 ELSE GOSUB 1950'if target is opp, resolve fight
-1570 IF act=1 OR act=2 THEN GOSUB 1840:' update stats on move or won fight
+1570 IF act=1 OR act=2 THEN grd(tx,ty)=id:GOSUB 1840:' update stats on move or won fight
 1580 RETURN
 1590 '
 1600 ' CPU Defender
@@ -188,8 +187,7 @@
 1880 'there was a fight and opp lost a block
 1890 IF st(opp,icn,0)-1<1 THEN st(opp,icn,0)=0:RETURN
 1900 tmp=st(opp,icn,0)-1:st(opp,ism,0)=st(opp,ism,0)-tx:st(opp,ism,1)=st(opp,ism,1)-ty:st(opp,ivg,0)=INT(st(opp,ism,0)/tmp):st(opp,ivg,1)=INT(st(opp,ism,1)/tmp):st(opp,icn,0)=tmp
-1910 ' recalculate min max x y if needed due to opp's lost block
-1920 IF st(opp,imn,0)=tx OR st(opp,imn,1)=ty OR st(opp,imx,0)=tx OR st(opp,imx,1)=ty THEN GOSUB 1990:'recalculate min and max x,y
+1910 GOSUB 1990:' recalculate min max x y if needed due to opp's lost block
 1930 RETURN
 1940 '
 1950 ' resolve fg
@@ -197,19 +195,13 @@
 1970 RETURN
 1980 '
 1990 ' recalculate minx maxx miny maxy
-2000 cminx=st(opp,imn,0):cmaxx=st(opp,imx,0):cminy=st(opp,imn,1):cmaxy=st(opp,imx,1)
-2010 imnx=0:imxx=0:imny=0:imxy=0
-2020 FOR cx=cminx TO cmaxx:FOR cy=cminy TO cmaxy
-2030 IF cx=tx AND cy=ty THEN 2090
-2040 IF grd(cx,cy)<>opp THEN GOTO 2090
-2050 IF imnx=0 THEN imnx=cx ELSE imnx=MIN(imnx,cx)
-2060 IF imxx=0 THEN imxx=cx ELSE imxx=MAX(imxx,cx)
-2070 IF imny=0 THEN imny=cy ELSE imny=MIN(imny,cy)
-2080 IF imxy=0 THEN imxy=cy ELSE imxy=MAX(imxy,cy)
-2090 NEXT cy
-2100 NEXT cx
-2110 st(opp,imn,0)=imnx:st(opp,imn,1)=imny:st(opp,imx,0)=imxx:st(opp,imx,1)=imxy
-2120 RETURN
+1991 IF st(opp,imn,0)=tx OR st(opp,imn,1)=ty OR st(opp,imx,0)=tx OR st(opp,imx,1)=ty THEN 2000 ELSE RETURN
+2000 minx=st(opp,imn,0):maxx=st(opp,imx,0):miny=st(opp,imn,1):maxy=st(opp,imx,1)
+2030 FOR i=minx TO maxx:FOR j=miny TO maxy:IF grd(i,j)=opp THEN st(opp,imn,0)=i:GOTO 2040 ELSE NEXT:NEXT
+2040 FOR i=maxx TO minx STEP -1:FOR j=miny TO maxy:IF grd(i,j)=opp THEN st(opp,imx,0)=i:GOTO 2050 ELSE NEXT:NEXT
+2050 FOR j=miny TO maxy:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imn,1)=j:GOTO 2060 ELSE NEXT:NEXT
+2060 FOR j=maxy TO miny STEP -1:FOR i=minx TO maxx:IF grd(i,j)=opp THEN st(opp,imx,1)=j:GOTO 2070 ELSE NEXT:NEXT
+2070 RETURN
 2130 '
 2140 ' highlight
 2150 IF hx<1 OR hy<1 OR hx>gw OR hy>gh THEN RETURN
