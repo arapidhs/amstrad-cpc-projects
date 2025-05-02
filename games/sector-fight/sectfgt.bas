@@ -3,13 +3,13 @@
 30 ON BREAK GOSUB 3000
 40 MODE 1:INK 0,0:INK 1,26:PAPER 0:PEN 1:BORDER 0
 50 '
-60 PRINT "Select mode (0-Mode0 1-Mode1)";
+60 CLEAR INPUT:LOCATE 1,1:PRINT "Select mode (0-Mode0 1-Mode1)";
 70 a$="":WHILE a$="":a$=INKEY$:WEND
 80 IF a$<>"0" AND a$<>"1" THEN a$="1"
 90 smd=VAL(a$):cols=20*(2^smd):rows=25:hcols=INT(cols/2):hrows=INT(rows/2)
-110 PRINT"Select move delay (1=0.5s 2=1s else=0s)";
+110 CLEAR INPUT:LOCATE 1,3:PRINT"Auto Pause at End of Turn":PRINT"Default No (Y/N)";
 120 a$="":WHILE a$="":a$=INKEY$:WEND
-130 IF a$="1" THEN dly=500 ELSE IF a$="2" THEN dly=1000 ELSE dly=0
+130 IF UPPER$(a$)="Y" THEN ps=1 ELSE ps=0
 140 '
 150 ' Screen initialization and colors
 160 ' cbg bg color, cl1,cl2 cpu colors, ctx text color
@@ -113,7 +113,7 @@
 1180 IF act=3 THEN hx=tx:hy=ty:GOSUB 2340:SOUND 1,95,20,15:SOUND 1,125,20,15:GOSUB 2340:' fight lost highlight, play sound highlight
 1190 IF act=1 OR act=2 THEN LOCATE ofx+tx,ofy+ty:PEN cpuclr:PRINT b$;
 1200 GOSUB 2410:' print block counts
-1210 GOSUB 2510:' delay routine
+1210 IF ps=1 THEN CLEAR INPUT:CALL &BB18:'auto pause
 1220 IF c1+c2>=gwh OR c1=0 OR c2=0 THEN GOTO 1310
 1230 IF turn=1 THEN turn=2 ELSE turn=1
 1240 trs=1
@@ -250,10 +250,6 @@
 2470 tmp=INT(LEN(ms$)/2):tmpx=MAX(1,hcols-tmp):LOCATE tmpx,hrows:PEN ctx:PRINT ms$:tmp=LEN(ms$)
 2480 CLEAR INPUT:CALL &BB18:LOCATE tmpx,hrows:PRINT SPC(tmp)
 2490 RETURN
-2500 '
-2510 ' delay routine
-2520 IF dly>0 THEN FOR i=0 TO dly:NEXT:RETURN' delay routine
-2530 '
 2540 ' draw grid border
 2550 ' draw top and bottom horizontal
 2560 PEN ctx:LOCATE ofx,ofy:PRINT CHR$(150)+STRING$(gw,CHR$(154))+CHR$(156)
