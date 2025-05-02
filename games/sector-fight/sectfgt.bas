@@ -119,7 +119,7 @@
 1210 GOSUB 2780:' print block counts
 1220 'auto pause only for cpu moves
 1225 IF id=id2 AND h=1 THEN 1240
-1230 IF ps=1 THEN a$="":FOR i=sx TO cols:LOCATE i,sy:a$=a$+COPYCHR$(#0):NEXT:PAPER cpuclr:PEN cbg:LOCATE sx,sy:PRINT a$:PAPER cbg:PEN cpuclr:CLEAR INPUT:CALL &BB18
+1230 IF ps=1 THEN a$="":FOR i=sx TO cols:LOCATE i,sy:a$=a$+COPYCHR$(#0):NEXT:PAPER cpuclr:PEN ctx:LOCATE sx,sy:PRINT a$:PAPER cbg:PEN cpuclr:CLEAR INPUT:CALL &BB18
 1240 IF c1+c2>=gwh OR c1=0 OR c2=0 THEN GOTO 1330
 1250 IF turn=1 THEN turn=2 ELSE turn=1
 1260 trs=1
